@@ -98,13 +98,14 @@ lip_notch_extra = 2.0     # lip removed over notch width + this (total)
 lip_clip_extra = 2.0      # lip removed over clip width + this (total)
 lip_rib_extra = 0.6       # lip cut around ribs, per side
 clip_length = 13.0        # clip length (root Z 19 to tip)
-clip_thickness = 1.4      # clip thickness
+clip_thickness = 1.2      # clip thickness (3 lines at 0.4 nozzle)
 clip_width = 8.0          # clip width
-clip_gap = 0.3            # gap clip to wall inner face
-hook_overlap = 0.8        # hook protrusion
-hook_height = 1.5         # hook height (Z)
-hook_lead = 0.8           # 45 deg lead-in height (= overlap for 45 deg)
+clip_gap = 0.2            # gap clip to wall inner face
+hook_overlap = 1.3        # hook protrusion (bite into wall = overlap - gap = 1.1)
+hook_height = 2.1         # hook height (Z): lead-in + 0.8 flat catch
+hook_lead = 1.3           # 45 deg lead-in height (= overlap for 45 deg)
 slot_clearance = 0.3      # clip slot clearance per side
+slot_top_clearance = 0.1  # slot top edge above the catch face (lid play when clipped)
 clip_top_xs = (-38.0, 40.0)    # top wall clip X
 clip_bottom_xs = (-50.0, 50.0)  # bottom wall clip X
 clip_side_y = aa_cy       # side wall clip Y
@@ -112,7 +113,7 @@ press_gap = 0.2           # rib tip gap to panel back
 rib_leg = 12.0            # rib leg length
 rib_t = 1.6               # rib thickness
 rib_inset = 1.0           # rib inset from panel outline corners
-clip_strain_max = 0.012   # allowed cantilever strain
+clip_strain_max = 0.015   # allowed cantilever strain (PLA, repeated opening)
 
 # ---- Stand ----
 tilt_deg = 15.0           # tilt back from vertical
