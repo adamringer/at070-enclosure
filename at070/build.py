@@ -36,7 +36,6 @@ def printable_parts():
         "lid": flip(lid()),
         "stand": _on_bed(stand()),
         "coupon_fit_frame": _on_bed(coupons.coupon_fit_frame()),
-        "coupon_top_edge_front": _on_bed(coupons.coupon_top_edge_front()),
         "coupon_top_edge_lid": flip(coupons.coupon_top_edge_lid()),
     }
 

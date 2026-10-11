@@ -31,7 +31,7 @@ def overlap(a, b):
 
 
 @pytest.mark.parametrize("name", ["front_shell", "lid", "stand", "coupon_fit_frame",
-                                  "coupon_top_edge_front", "coupon_top_edge_lid"])
+                                  "coupon_top_edge_lid"])
 def test_single_valid_solid_fits_and_on_bed(printable, name):
     part = printable[name]
     assert part.is_valid

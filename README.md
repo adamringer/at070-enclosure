@@ -35,9 +35,8 @@ real, right-handed geometry. Keep `params.py` in front-view terms.
 | `front_shell` | front face down, as modeled |
 | `lid` | back face down, clips pointing up |
 | `stand` | base on the bed |
-| `coupon_fit_frame` | front face down; checks panel outline, window, FPC relief |
-| `coupon_top_edge_front` | front face down; checks HDMI/power notches and one clip slot |
-| `coupon_top_edge_lid` | back face down; checks the matching lid section and clip |
+| `coupon_fit_frame` | front face down; checks panel outline, window, FPC relief, and (full-height top-edge section) HDMI/power notches with the panel in place and one clip slot |
+| `coupon_top_edge_lid` | back face down; snaps onto the fit frame's top-edge section to check the clip |
 
 Suggested settings: 0.4 mm nozzle, 0.2 mm layers, 6 perimeters for the 2.4 mm walls
 (wall count matters for the snap clips, so keep them solid), 15 to 20 % infill, no supports.
