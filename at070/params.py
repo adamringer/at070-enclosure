@@ -116,19 +116,67 @@ rib_inset = 1.0           # rib inset from panel outline corners
 clip_strain_max = 0.015   # allowed cantilever strain (PLA, repeated opening)
 
 # ---- Stand ----
-tilt_deg = 15.0           # tilt back from vertical
-stand_w = 100.0           # stand width (along case edge)
-stand_d = 110.0           # stand depth
-stand_base_t = 4.0        # base thickness
-stand_corner_r = 6.0      # base corner radius
+# Three printed parts: base (with pivot towers and a notched rack), cradle (holds the case,
+# tilts about two pins), strut (props the cradle; its foot clicks into a rack notch).
+# Stand frame: X along the case edge, +Y toward the back, Z up, base underside on Z = 0.
+# Cradle frame: s = front to back, t = up along the case (equal to Y and Z at tilt 0).
+stand_base_t = 4.0        # base plate thickness
+stand_corner_r = 6.0      # base plate corner radius
 groove_clearance = 1.0    # groove width minus case depth
 case_depth = front_thickness + z_lid_top        # 23.4
 groove_w = case_depth + groove_clearance        # 24.4
-lip_h = 10.0              # front lip height along tilt
-lip_wall = 4.0            # front lip thickness
-rest_t = 4.0              # back rest thickness
-rest_top_z = 70.0         # back rest height above base underside
 com_min_edge = 25.0       # min COM distance from base front/back edges
+tilt_step_deg = 5.0       # click-in step
+tilt_max_deg = 45.0       # max tilt back from vertical
+pivot_clear = 0.25        # radial clearance, pin in socket hole
+snap_interf = 0.35        # snap interference per side (slot narrower than the pin)
+socket_chamfer = 1.0      # 45 deg lead-in at the slot mouth
+# cradle
+cradle_w = 88.0           # cradle width (X); must be < outer_h
+cradle_floor_t = 9.0      # floor thickness (t -9..0); pivot axis sits 6 below the case bottom
+cradle_lip_wall = 4.0     # front lip thickness
+cradle_lip_h = 10.0       # front lip height above the groove floor
+cradle_rest_t = 4.0       # back rest thickness
+cradle_rest_h = 80.0      # back rest height above the groove floor
+cradle_chamfer = 8.0      # 45 deg chamfer on the floor's back-bottom edge (lowers pivot_z)
+cradle_s_total = cradle_lip_wall + groove_w + cradle_rest_t   # 32.4
+pivot_pin_d = 6.0         # cradle pivot pin diameter
+pivot_pin_r = pivot_pin_d / 2
+pivot_pin_s = 3.0         # pivot axis position s
+pivot_pin_t = -cradle_floor_t + pivot_pin_r    # pivot axis position t (-6): pins tangent to floor
+pivot_side_gap = 0.5      # cradle side face to tower
+pivot_block_t = 6.0       # tower thickness (X)
+pivot_pin_extra = 0.5     # pin protrusion beyond the tower outer face
+pivot_pin_flat_w = 0.6    # width of the flat at the pin bottom
+strut_attach_t = 70.0     # strut pin axis t on the rest
+strut_lug_gap = 0.5       # strut side to lug
+strut_lug_t = 5.0         # lug thickness (X)
+strut_lug_out = 9.0       # lug length behind the rest
+strut_pin_to_end = 4.0    # strut pin axis to the lug's back end
+strut_lug_wall = 2.0      # lug material around the socket hole
+# base
+base_front_margin = 25.0  # base front edge to pivot axis (Y)
+base_back_margin = 12.0   # last notch to base back edge
+swing_clearance = 2.0     # min gap, cradle lowest point to base top over the whole swing
+tower_wall = 2.0          # tower material around the socket hole
+tower_case_gap = 0.8      # min radial gap, case to tower
+rack_h = 4.0              # rack height above base top
+rack_extra_w = 4.0        # rack width beyond strut width
+rack_end_margin = 4.0     # rack extends this far beyond first/last notch (plus notch_r)
+notch_depth = 2.5         # notch depth below rack top
+notch_extra_r = 0.3       # notch radius minus foot radius
+notch_min_gap = 1.2       # min wall between neighboring notches
+label_size = 4.5          # angle label text height
+label_h = 0.6             # label emboss height
+label_x = 33.0            # label center X (beside the rack)
+# strut
+strut_w = 40.0            # strut width (X)
+strut_t = 5.0             # strut thickness
+strut_len = 95.0          # pin axis to foot axis
+strut_pin_d = 5.0         # strut top pin diameter
+foot_r = 2.0              # strut foot radius
+foot_toe = 1.3            # foot sticks out below the bar's lower face (bar clears the rack)
+notch_r = foot_r + notch_extra_r
 
 # ---- Coupons ----
 coupon_fit_z = 6.5        # fit-frame cut height
