@@ -36,7 +36,7 @@ def _slot(wall_name, t):
     ax, ay = anchor(t)
     hw = p.clip_width / 2 + p.slot_clearance
     z0 = p.z_rim - p.clip_length - p.slot_clearance
-    z1 = p.z_rim - p.clip_length + p.hook_height + p.slot_clearance
+    z1 = p.z_rim - p.clip_length + p.hook_height + p.slot_top_clearance
     # local frame: u outward from inner face, v tangential; cut through wall (+0.5 overshoot)
     s = box(-0.5, p.wall + 0.5, -hw, hw, z0, z1)
     return Pos(ax, ay, 0) * (Rot(Z=ang) * s)
