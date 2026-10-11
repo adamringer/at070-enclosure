@@ -29,9 +29,9 @@ board_keepout_margin = 2.0  # keep-out growth in X/Y
 board_top_z = panel_t + board_adhesive + board_pcb + board_comp  # 13.8
 hdmi_x = -8.5             # HDMI socket center X (ruler photos 2026-10-11, +-1)
 hdmi_mouth_y = 36.2       # HDMI socket mouth Y (ruler photos 2026-10-11)
-hdmi_z = 12.0             # HDMI socket center height
+hdmi_z = 13.7             # HDMI socket/plug center height (ruler 2026-10-11: 8.0 above panel back)
 plug_w = 21.0             # HDMI plug body width (X)
-plug_t = 11.0             # HDMI plug body thickness (Z)
+plug_t = 8.9              # HDMI plug body thickness (Z) (measured 7/20 in)
 plug_len = 45.0           # HDMI plug body length (Y)
 plug_cable_d = 6.0        # cable diameter behind plug
 plug_cable_len = 30.0     # cable length modeled behind plug
@@ -82,9 +82,20 @@ lb_bottom_xs = (-60.0, 60.0)   # bottom wall block centers X
 lb_left_ys = (-30.0, 30.0)     # left wall block centers Y
 lb_top_xs = (30.0, 70.0)       # top wall block centers X
 
-hdmi_notch_margin = 2.0   # notch margin per side around plug (covers position uncertainty)
-hdmi_notch_w = plug_w + 2 * hdmi_notch_margin   # 25
-hdmi_notch_z0 = hdmi_z - plug_t / 2 - 1.0       # 5.5
+# HDMI alcove: the top wall and lid step in to the socket over the plug width, so the socket
+# is visible and the plug goes straight in. The alcove's walls and floor hang from the lid
+# (the panel drops in from the back, so the shell can't reach over it).
+alcove_clear = 2.0        # alcove inner side clearance per side around the plug body
+alcove_wall = 1.6         # alcove side/back wall and floor thickness
+alcove_floor_gap = 0.3    # alcove floor underside above the panel back
+alcove_side_gap = 0.2     # shell wall cut to alcove side wall, per side
+plug_slot_clear = 0.5     # back-wall slot clearance around the plug body
+alcove_hw_in = plug_w / 2 + alcove_clear                 # 12.5
+alcove_hw_out = alcove_hw_in + alcove_wall               # 14.1
+alcove_y0 = hdmi_mouth_y + 0.4                           # back wall inner side (clear of socket)
+alcove_z0 = panel_t + alcove_floor_gap                   # floor underside (6.0)
+hdmi_notch_w = 2 * (alcove_hw_out + alcove_side_gap)     # shell wall cut width (28.6)
+hdmi_notch_z0 = panel_t                                  # shell wall cut bottom
 power_notch_w = 5.0       # power notch width
 power_notch_z0 = power_z - power_notch_w / 2    # 7.5 (bottom of round end)
 

@@ -93,9 +93,28 @@ def _lip():
     return ring
 
 
+def hdmi_alcove():
+    """Open alcove at the HDMI socket: two side walls, a back wall with a slot for the plug body,
+    and a floor, all hanging from the lid. The lid plate is cut away over it (see lid())."""
+    x, hi, ho = p.hdmi_x, p.alcove_hw_in, p.alcove_hw_out
+    y0, y1 = p.alcove_y0, p.outer_y1
+    z0, z1 = p.alcove_z0, p.z_rim + EMBED
+    walls = (box(x - ho, x - hi, y0, y1, z0, z1) + box(x + hi, x + ho, y0, y1, z0, z1)
+             + box(x - ho, x + ho, y0, y1, z0, z0 + p.alcove_wall)
+             + box(x - ho, x + ho, y0, y0 + p.alcove_wall, z0, z1))
+    c = p.plug_slot_clear
+    slot = box(x - p.plug_w / 2 - c, x + p.plug_w / 2 + c, y0 - 1, y0 + p.alcove_wall + 1,
+               p.hdmi_z - p.plug_t / 2 - c, p.z_rim)
+    return walls - slot
+
+
 def lid():
     plate = outer_solid(p.z_rim, p.z_lid_top)
     back = plate.edges().filter_by_position(Axis.Z, p.z_lid_top - 1e-3, p.z_lid_top + 1e-3)
     plate = plate.fillet(p.edge_fillet, back)
     out = plate + _lip() + clips() + press_ribs()
+    # open the lid over the HDMI alcove (after the lip, whose top fuses into the plate)
+    out -= box(p.hdmi_x - p.alcove_hw_in, p.hdmi_x + p.alcove_hw_in,
+               p.alcove_y0 + p.alcove_wall, p.outer_y1 + 1, p.z_rim - 1, p.z_lid_top + 1)
+    out += hdmi_alcove()
     return out.clean()
