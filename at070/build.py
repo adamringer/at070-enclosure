@@ -5,7 +5,7 @@ from build123d import Compound, Mesher, Plane, Pos, Rot, export_step, export_stl
 from at070 import coupons, mocks
 from at070.front_shell import front_shell
 from at070.lid import lid
-from at070.stand import stand
+from at070 import stand
 
 
 def to_world(shape):
@@ -34,7 +34,12 @@ def printable_parts():
     return {
         "front_shell": _on_bed(front_shell()),
         "lid": flip(lid()),
-        "stand": _on_bed(stand()),
+        # Stand parts are NOT passed through to_world: that mirror fixes the case's left-handed
+        # model frame only. The stand frame is right-handed, and mirroring would make the angle
+        # labels read backwards.
+        "stand_base": _sit(stand.stand_base()),
+        "stand_cradle": _sit(stand.stand_cradle()),      # upright, floor underside on the bed
+        "stand_strut": _sit(Rot(Y=180) * stand.stand_strut()),   # flat on its upper face
         "coupon_fit_frame": _on_bed(coupons.coupon_fit_frame()),
         "coupon_top_edge_lid": flip(coupons.coupon_top_edge_lid()),
     }
@@ -48,6 +53,15 @@ def assembly():
     for name, s in parts:
         s.label = name
     return Compound(children=[s for _, s in parts], label="assembly")
+
+
+def stand_assembly(theta=15.0):
+    """Base, cradle, strut and a landscape case box at the given tilt (stand frame, right-handed)."""
+    parts = [("stand_base", stand.stand_base()), ("stand_cradle", stand.cradle_pose(theta)),
+             ("stand_strut", stand.strut_pose(theta)), ("case_box", stand.case_pose(theta, True))]
+    for name, s in parts:
+        s.label = name
+    return Compound(children=[s for _, s in parts], label="stand_assembly")
 
 
 def main(out_dir="out"):
@@ -64,6 +78,8 @@ def main(out_dir="out"):
               f"volume {part.volume / 1000:.2f} cm3")
     export_step(assembly(), str(out / "assembly.step"))
     print("assembly.step written")
+    export_step(stand_assembly(), str(out / "stand_assembly.step"))
+    print("stand_assembly.step written")
 
 
 if __name__ == "__main__":
