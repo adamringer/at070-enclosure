@@ -229,3 +229,13 @@ def test_printed_part_handedness(printable):
     probe = lambda x: overlap(part, box(x - 2, x + 2, y - 0.5, y + 0.5, z - 1, z + 1))
     assert probe(at(off)) < 0.01          # notch is here (left seen from the front)
     assert probe(at(-off)) > 1.0          # solid wall at the mirror position
+
+
+def test_hdmi_alcove_open(shell, lid_part):
+    """The plug path from the socket mouth outward is open from the back (lid side), so the
+    socket is visible and the plug goes straight in."""
+    x, hw = p.hdmi_x, p.plug_w / 2
+    y0 = p.alcove_y0 + p.alcove_wall + 0.1
+    top = box(x - hw, x + hw, y0, p.outer_y1 + 1, p.hdmi_z + p.plug_t / 2, p.z_lid_top + 1)
+    assert overlap(lid_part, top) < 0.01
+    assert overlap(shell, top) < 0.01

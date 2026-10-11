@@ -78,7 +78,7 @@ def front_shell():
                             rect(wx0, wx1, wy0, wy1, zf + c)])
     shell -= cone
 
-    # HDMI notch (open from rim)
+    # HDMI alcove cut (open from rim down to the panel back; the lid's alcove fills it)
     hw_n = p.hdmi_notch_w / 2
     shell -= box(p.hdmi_x - hw_n, p.hdmi_x + hw_n, p.pocket_y1 - 0.5, p.outer_y1 + 1,
                  p.hdmi_notch_z0, p.z_rim + 1)
