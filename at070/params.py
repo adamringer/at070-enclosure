@@ -27,15 +27,15 @@ board_pcb = 1.6           # PCB thickness
 board_comp = 5.0          # tallest component above PCB
 board_keepout_margin = 2.0  # keep-out growth in X/Y
 board_top_z = panel_t + board_adhesive + board_pcb + board_comp  # 13.8
-hdmi_x = -10.45           # HDMI socket center X
-hdmi_mouth_y = 37.6       # HDMI socket mouth Y
+hdmi_x = -8.5             # HDMI socket center X (ruler photos 2026-10-11, +-1)
+hdmi_mouth_y = 36.2       # HDMI socket mouth Y (ruler photos 2026-10-11)
 hdmi_z = 12.0             # HDMI socket center height
 plug_w = 21.0             # HDMI plug body width (X)
 plug_t = 11.0             # HDMI plug body thickness (Z)
 plug_len = 45.0           # HDMI plug body length (Y)
 plug_cable_d = 6.0        # cable diameter behind plug
 plug_cable_len = 30.0     # cable length modeled behind plug
-power_x = -57.0           # power cable X
+power_x = -57.0           # power cable X (cable is flexible; any nearby X works)
 power_z = 10.0            # power cable center Z
 power_cable_d = 4.0       # USB cable diameter
 power_shrink_d = 6.0      # heat-shrink diameter
@@ -82,8 +82,8 @@ lb_bottom_xs = (-60.0, 60.0)   # bottom wall block centers X
 lb_left_ys = (-30.0, 30.0)     # left wall block centers Y
 lb_top_xs = (30.0, 70.0)       # top wall block centers X
 
-hdmi_notch_margin = 1.0   # notch margin per side around plug
-hdmi_notch_w = plug_w + 2 * hdmi_notch_margin   # 23
+hdmi_notch_margin = 2.0   # notch margin per side around plug (covers position uncertainty)
+hdmi_notch_w = plug_w + 2 * hdmi_notch_margin   # 25
 hdmi_notch_z0 = hdmi_z - plug_t / 2 - 1.0       # 5.5
 power_notch_w = 5.0       # power notch width
 power_notch_z0 = power_z - power_notch_w / 2    # 7.5 (bottom of round end)
@@ -132,7 +132,7 @@ com_min_edge = 25.0       # min COM distance from base front/back edges
 
 # ---- Coupons ----
 coupon_fit_z = 6.5        # fit-frame cut height
-coupon_box = (-72.0, 5.0, 30.0, 65.0)   # x0, x1, y0, y1 of top-edge coupon
+coupon_box = (-72.0, 10.0, 30.0, 65.0)   # x0, x1, y0, y1 of top-edge coupon
 
 # ---- Printer ----
 bed_limit = 250.0
