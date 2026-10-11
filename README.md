@@ -24,7 +24,9 @@ All dimensions are named constants in `at070/params.py` (mm). Several are photo 
 (driver board, HDMI socket, cable positions) and may need adjusting after measuring.
 
 Coordinates (assembled): origin at the panel center on the glass face; +X right seen from
-the front, +Y up (HDMI cable side), +Z toward the back.
+the front, +Y up (HDMI cable side), +Z toward the back. That frame is left-handed, so
+`build.py` mirrors every part in X (`to_world`) before export; the exported parts are the
+real, right-handed geometry. Keep `params.py` in front-view terms.
 
 ## Parts list (out/)
 

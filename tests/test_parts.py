@@ -115,3 +115,20 @@ def test_stand_bbox():
 def test_case_centered_on_aa():
     assert abs((p.outer_x0 + p.outer_x1) / 2 - p.aa_cx) < 1e-6
     assert abs((p.outer_y0 + p.outer_y1) / 2 - p.aa_cy) < 1e-6
+
+
+def test_printed_part_handedness(printable):
+    """Pin a known asymmetric feature to its real side. The front shell prints front face down;
+    seen from the front (from below the bed, +Y up) the viewer's right is -X. The HDMI notch
+    must sit left of the case center, as hdmi_x < aa_cx says in front-view terms."""
+    part = printable["front_shell"]
+    bb = part.bounding_box()
+    cx = (bb.min.X + bb.max.X) / 2
+    def at(front_view_x):      # front-view X offset from the case center -> printed X
+        return cx - front_view_x
+    off = p.hdmi_x - p.aa_cx
+    y = bb.max.Y - p.wall / 2
+    z = p.front_thickness + 15.0
+    probe = lambda x: overlap(part, box(x - 2, x + 2, y - 0.5, y + 0.5, z - 1, z + 1))
+    assert probe(at(off)) < 0.01          # notch is here (left seen from the front)
+    assert probe(at(-off)) > 1.0          # solid wall at the mirror position

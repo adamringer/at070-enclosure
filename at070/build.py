@@ -1,21 +1,32 @@
 """Export all printable parts (print orientation, on Z = 0) and an assembly STEP to out/."""
 import sys
 from pathlib import Path
-from build123d import Compound, Mesher, Pos, Rot, export_step, export_stl
+from build123d import Compound, Mesher, Plane, Pos, Rot, export_step, export_stl
 from at070 import coupons, mocks
 from at070.front_shell import front_shell
 from at070.lid import lid
 from at070.stand import stand
 
 
-def _on_bed(shape):
+def to_world(shape):
+    """Model frame -> real part. The model's +X is "right seen from the front" with +Z toward
+    the back, which is left-handed; mirroring X gives the right-handed part that prints."""
+    return shape.mirror(Plane.YZ)
+
+
+def _sit(shape):
     z = shape.bounding_box().min.Z
     return Pos(0, 0, -z) * shape
 
 
+def _on_bed(shape):
+    """Real part, front face down, on Z = 0."""
+    return _sit(to_world(shape))
+
+
 def flip(shape):
-    """Rotate 180 deg about X (back face down), then sit on Z = 0."""
-    return _on_bed(Rot(X=180) * shape)
+    """Real part rotated 180 deg about X (back face down), on Z = 0."""
+    return _sit(Rot(X=180) * to_world(shape))
 
 
 def printable_parts():
@@ -34,6 +45,7 @@ def assembly():
     parts = [("front_shell", front_shell()), ("lid", lid()), ("panel", mocks.panel()),
              ("board_keepout", mocks.board_keepout()), ("hdmi_plug", mocks.hdmi_plug()),
              ("power_cable", mocks.power_cable())]
+    parts = [(name, to_world(s)) for name, s in parts]
     for name, s in parts:
         s.label = name
     return Compound(children=[s for _, s in parts], label="assembly")
