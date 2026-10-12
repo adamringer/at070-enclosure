@@ -130,35 +130,40 @@ clip_strain_max = 0.015   # allowed cantilever strain (PLA, repeated opening)
 
 # ---- Kickstand ----
 # Built into the lid back: a main flap (landscape, several click positions) and a small prop
-# (portrait, one click position). Each flap has a knuckle with a pin stub at both ends that
-# snaps into a hinge block; the blocks snap into slots through the lid plate. All dimensions
+# (portrait, one click position). Each flap has a knuckle with a blind hole at both ends that
+# takes the pin on a hinge block; the blocks snap into slots through the lid plate. All dimensions
 # are in a canonical frame: hinge axis along X through (Y 0, Z ks_axis_z above the lid back),
 # the flap hangs toward -Y when closed, the lid back is the plane Z = 0, +Y is the side the
-# detent spring is on, and the snap legs are on the -Y side of the socket.
+# detent spring is on, and the snap legs are on the -Y side of the axis.
 ks_gap = 0.3              # closed flap underside (and knuckle bottom) above the lid back
 ks_plate_t = 3.0          # flap plate thickness
 ks_flap_corner_r = 5.0    # flap free-end corner radius (capped at width/4)
 ks_knuckle_r = 4.0        # knuckle (and cam) radius, tangent to the plate underside
 ks_axis_z = ks_gap + ks_knuckle_r   # hinge axis height above the lid back (4.3)
-ks_pin_d = 5.0            # pin stub diameter
-ks_pin_clear = 0.25       # radial clearance, pin in socket hole
-ks_snap_interf = 0.35     # snap interference per side (slot narrower than the pin)
-ks_socket_chamfer = 1.0   # 45 deg lead-in at the slot mouth
-ks_socket_wall = 1.4      # block material around the socket hole
+ks_pin_d = 4.0            # hinge pin diameter (on the block's inner face)
+ks_pin_hole_clear = 0.2   # radial clearance, pin in the knuckle's blind hole
+ks_pin_engage = 4.0       # pin length inside the knuckle
+ks_pin_chamfer = 0.4      # 45 deg lead-in on the pin tip
+ks_hole_extra = 0.5       # blind hole deeper than the pin engagement
 ks_ax_gap = 0.5           # axial gap, knuckle end to block
 ks_block_w = 5.0          # block width along the hinge axis (also leg width)
-ks_pin_len = ks_ax_gap + ks_block_w - 0.5   # pin stub length (ends 0.5 short of the block face)
+ks_pin_len = ks_ax_gap + ks_pin_engage        # pin length from the block face
+ks_hole_d = ks_pin_d + 2 * ks_pin_hole_clear  # blind hole diameter (teardrop, point up)
+ks_hole_depth = ks_pin_engage + ks_hole_extra
 ks_cam_len = 11.0         # notched cam length at one end of the knuckle
-ks_block_r = ks_pin_d / 2 + ks_pin_clear + ks_socket_wall   # block half width / top radius
+ks_notch_x0 = 0.5         # notches start this far beyond the plate end ...
+ks_notch_len = 5.0        # ... and are this long (the tip sits inside; the hole is beyond)
+ks_hole_wall = 0.8        # min wall between hole and notches / knuckle surface
+ks_block_r = ks_knuckle_r # block half width / top radius (block no taller than the knuckle)
 # hinge block snap legs (flex once, at assembly)
 ks_leg_t = 1.2            # leg thickness
 ks_leg_slit = 2.0         # gap between the two legs
 ks_leg_chan = 0.6         # gap between the inner leg and the block body
 ks_leg_len = 7.4          # leg length from the slit top to the barb catch face
-ks_slot_clear = 0.2       # lid slot clearance per side
+ks_slot_clear = 0.08      # lid slot clearance per side
 ks_barb_catch = 0.8       # barb overlap under the lid
 ks_barb_flat = 0.3        # barb flat height below the catch face
-ks_leg_play = 0.05        # block lift play: catch face this far below the lid underside
+ks_leg_play = 0.0         # catch face this far below the lid underside (0 = flush)
 ks_cap_t = 1.2            # cap thickness above the slit
 ks_leg_strain_max = 0.03  # allowed snap-leg strain (one-time assembly)
 # detent: V notches with steep flanks on the cam, a tip riding in them on a stiff leaf spring
@@ -206,7 +211,7 @@ coupon_box = (-72.0, 10.0, 30.0, 65.0)   # x0, x1, y0, y1 of top-edge coupon
 bed_limit = 250.0
 
 # ---- Hinge coupon (canonical frame of the kickstand) ----
-coupon_hinge_w = 19.0     # coupon flap plate width (plus the cam, the knuckle is 30 long)
+coupon_hinge_w = 25.0     # coupon flap plate width (plus the cam)
 coupon_hinge_len = 20.0   # coupon flap plate length
-coupon_hinge_x = (-12.0, 28.0)   # lid piece X range
+coupon_hinge_x = (-19.5, 30.5)   # lid piece X range (both blocks)
 coupon_hinge_y = (-22.0, 18.0)   # lid piece Y range

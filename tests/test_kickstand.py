@@ -266,16 +266,25 @@ def _slice_area(part, z, t=0.2):
 
 def test_hinge_block_prints_without_supports(printable):
     """Printed standing on the block's outer end face, every layer of the block has the same
-    profile (so nothing hangs in the air); the leaf spring grows straight up from it."""
+    profile (nothing hangs in the air); the pin (and the spring leaf) grow straight up from it,
+    so the pin prints round."""
+    bw, pl = p.ks_block_w, p.ks_pin_len
+    pin_area = math.pi * (p.ks_pin_d / 2) ** 2
     plain = printable["hinge_block"]
-    a = [_slice_area(plain, z) for z in (0.5, 2.0, 4.5)]
+    assert plain.bounding_box().size.Z == pytest.approx(bw + pl, abs=0.01)
+    a = [_slice_area(plain, z) for z in (0.5, 2.0, bw - 0.5)]
     assert max(a) - min(a) < 0.5
+    assert _slice_area(plain, bw + 1.0) == pytest.approx(pin_area, abs=0.5)
+    assert _slice_area(plain, bw + 3.0) == pytest.approx(pin_area, abs=0.5)
     spring = printable["hinge_block_spring"]
     h = spring.bounding_box().size.Z
-    block = [_slice_area(spring, z) for z in (0.5, 2.0, 4.5)]
+    block = [_slice_area(spring, z) for z in (0.5, 2.0, bw - 0.5)]
     assert max(block) - min(block) < 0.5
-    leaf = [_slice_area(spring, z) for z in (p.ks_block_w + 1.0, p.ks_block_w + 3.0, h - p.ks_tip_len - 1.0)]
+    up = [_slice_area(spring, z) for z in (bw + 1.0, bw + 3.0)]           # leaf + pin
+    assert max(up) - min(up) < 0.5
+    leaf = [_slice_area(spring, z) for z in (bw + pl + 0.5, bw + pl + 1.5)]
     assert max(leaf) - min(leaf) < 0.5
+    assert h == pytest.approx(bw + p.ks_leaf_len, abs=0.01)
 
 
 def test_flap_prints_flat_on_the_bed(printable):
@@ -287,18 +296,82 @@ def test_flap_prints_flat_on_the_bed(printable):
         assert sl is not None and sl.volume > 0.1
 
 
+# ---- pins and holes
+
+def _pin_x_ranges(width):
+    """X ranges (canonical) of the two hinge pins."""
+    xp, xs = ks.block_x0s(width)
+    return ((xp + p.ks_block_w, xp + p.ks_block_w + p.ks_pin_len), (xs - p.ks_pin_len, xs))
+
+
+def test_pins_fit_holes_with_clearance_at_every_notch():
+    """Each pin sits inside its blind hole with ks_pin_hole_clear all round: a cylinder just
+    under the hole diameter does not touch the flap, one just over does, and the pin itself
+    never touches the flap, at every notch angle and the full sweep."""
+    from at070.geom import cyl_x
+    width = p.ks_main_w
+    angles = sorted(set(list(p.ks_main_notches) + sweep_angles(MAIN_LAST)))
+    for a in angles:
+        parts = ks.main_parts(a, tip=False)
+        flap = ks.pose_flap(ks.flap(width, p.ks_main_len, p.ks_main_notches), a)
+        for (xa, xb) in _pin_x_ranges(width):
+            r = p.ks_pin_d / 2 + p.ks_pin_hole_clear
+            inside = cyl_x(0, p.ks_axis_z, r - 0.01, xa + p.ks_ax_gap, xb)
+            outside = cyl_x(0, p.ks_axis_z, r + 0.01, xa + p.ks_ax_gap, xb)
+            assert overlap(flap, inside) < 0.01, a
+            assert overlap(flap, outside) > 0.05, a
+        assert overlap(parts["flap"], parts["block_plain"]) < 0.01, a
+        assert overlap(parts["flap"], parts["block_spring"]) < 0.01, a
+
+
+def test_pin_engagement_and_hole_depth():
+    assert p.ks_pin_len - p.ks_ax_gap == pytest.approx(p.ks_pin_engage)
+    assert p.ks_hole_depth == pytest.approx(p.ks_pin_engage + p.ks_hole_extra)
+    assert p.ks_hole_d == pytest.approx(p.ks_pin_d + 2 * p.ks_pin_hole_clear)
+
+
+def test_hole_walls():
+    radial, axial = ks.hole_wall()
+    assert radial >= p.ks_hole_wall
+    assert axial >= p.ks_hole_wall
+    # the notch zone covers the spring tip
+    face = p.ks_ax_gap + p.ks_cam_len
+    assert p.ks_notch_x0 <= face - p.ks_leaf_len
+    assert face - p.ks_leaf_len + p.ks_tip_len <= p.ks_notch_x0 + p.ks_notch_len
+
+
+def test_teardrop_hole_point_up():
+    f = ks.flap(p.ks_main_w, p.ks_main_len, p.ks_main_notches)
+    hw = p.ks_main_w / 2
+    r = p.ks_hole_d / 2
+    za = p.ks_axis_z
+    x = -hw + 1.0
+    probe = lambda y, z: overlap(f, box(x - 0.2, x + 0.2, y - 0.05, y + 0.05, z - 0.05, z + 0.05))
+    assert probe(0.0, za + r * math.sqrt(2) - 0.2) < 1e-6          # inside the point: empty
+    assert probe(0.0, za - r + 0.1) < 1e-6                         # inside the bottom: empty
+    assert probe(0.0, za + r * math.sqrt(2) + 0.2) > 1e-6          # beyond the point: solid
+    assert probe(r * 1.3, za - 0.0) > 1e-6                         # beside the round part: solid
+
+
 # ---- hinge coupon
 
 def test_coupon_hinge_fits_and_clicks():
     lid_piece = coupons.coupon_hinge_lid()
-    block = coupons.coupon_hinge_block(tip=False)
-    assert overlap(block, lid_piece) < 0.01
+    plain, spring = coupons.coupon_hinge_blocks(tip=False)
+    assert overlap(plain, lid_piece) < 0.01 and overlap(spring, lid_piece) < 0.01
+    assert overlap(plain, spring) < 0.01
     for a in sweep_angles(MAIN_LAST):
         f = coupons.coupon_hinge_flap(a)
         assert overlap(f, lid_piece) < 0.01, a
-        assert overlap(f, block) < 0.01, a
+        assert overlap(f, plain) < 0.01, a
+        assert overlap(f, spring) < 0.01, a
+    plain, spring = coupons.coupon_hinge_blocks()
+    for a in p.ks_main_notches:
+        assert overlap(coupons.coupon_hinge_flap(a), spring) < 0.05, a
     x0, x1 = p.coupon_hinge_x
     y0, y1 = p.coupon_hinge_y
-    assert (x1 - x0, y1 - y0) == (40.0, 40.0)
-    bb = coupons.coupon_hinge_flap(0.0).bounding_box()
-    assert bb.min.X >= x0 and bb.max.X <= x1 and bb.min.Y >= y0 and bb.max.Y <= y1
+    bb = lid_piece.bounding_box()
+    assert (bb.size.X, bb.size.Y) == pytest.approx((x1 - x0, y1 - y0))
+    for part in (plain, spring, coupons.coupon_hinge_flap(0.0)):
+        b = part.bounding_box()
+        assert b.min.X >= x0 and b.max.X <= x1 and b.min.Y >= y0 and b.max.Y <= y1
