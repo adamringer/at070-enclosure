@@ -39,14 +39,14 @@ def printable_parts():
         "kickstand_prop": _on_bed(kickstand.flap(p.ks_prop_w, p.ks_prop_len, p.ks_prop_notches)),
         # Hinge blocks print standing on the block's outer end face (hinge-axis direction
         # vertical): every layer is the same profile, so no supports; the spring leaf grows up.
-        "hinge_block": _sit(Rot(Y=-90) * to_world(kickstand.hinge_block())),
+        "hinge_block": _sit(Rot(Y=90) * to_world(kickstand.hinge_block())),
         "hinge_block_spring": _sit(Rot(Y=-90) * to_world(kickstand.hinge_block(spring=True))),
         "coupon_fit_frame": _on_bed(coupons.coupon_fit_frame()),
         "coupon_top_edge_lid": flip(coupons.coupon_top_edge_lid()),
-        # hinge coupon: this lid piece + coupon_hinge_flap + one hinge_block_spring
+        # hinge coupon: this lid piece + coupon_hinge_flap + one hinge_block + one hinge_block_spring
         "coupon_hinge_lid": flip(coupons.coupon_hinge_lid()),
         "coupon_hinge_flap": _on_bed(kickstand.flap(p.coupon_hinge_w, p.coupon_hinge_len,
-                                                    p.ks_main_notches, pin_left=False)),
+                                                    p.ks_main_notches)),
     }
 
 

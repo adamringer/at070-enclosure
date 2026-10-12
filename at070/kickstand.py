@@ -7,9 +7,9 @@ side. `main_parts` / `prop_parts` place canonical parts on the lid in the case's
 (see README); build.py mirrors them to the real parts like the lid.
 """
 import math
-from build123d import Axis, Pos, Rot
+from build123d import Axis, Cone, Pos, Rot
 from at070 import params as p
-from at070.geom import box, c_socket, cyl_x, prism_x
+from at070.geom import box, cyl_x, prism_x
 
 EPS = 0.5          # cutter overshoot (mm)
 FUSE = 0.1         # overlap used to fuse touching solids
@@ -113,11 +113,22 @@ def _notch_cutter(theta_deg, x0, x1):
 
 # ---------------------------------------------------------------- parts (canonical frame)
 
+def pin(x_face, sign):
+    """Hinge pin from x_face in direction sign (+1 / -1), with a 45 deg lead-in on the tip."""
+    r, c, n = p.ks_pin_d / 2, p.ks_pin_chamfer, p.ks_pin_len
+    xa, xb = x_face - sign * FUSE, x_face + sign * (n - c)
+    body = cyl_x(0, p.ks_axis_z, r, min(xa, xb), max(xa, xb))
+    cone = Cone(r, r - c, c)                      # narrow end toward +Z
+    cone = Pos(xb + sign * c / 2, 0, p.ks_axis_z) * (Rot(Y=90 * sign) * cone)
+    return body + cone
+
+
 def hinge_block(x0=0.0, spring=False, tip=True):
-    """Hinge block from x0 to x0 + ks_block_w. Pad on the lid back (Z 0), C-socket for a pin stub
-    (axis Y 0, Z ks_axis_z, opening +Z, through the block), two snap legs on the -Y side that
-    pass through a lid slot, barbs catching the lid underside. With spring=True a detent leaf
-    spring runs from the block face x0 toward -X over the flap's cam (+Y side)."""
+    """Hinge block from x0 to x0 + ks_block_w. Pad on the lid back (Z 0), a hinge pin on the inner
+    face, two snap legs on the -Y side that pass through a lid slot, barbs catching the lid
+    underside. spring=False: flap on the +X side (pin toward +X); spring=True: flap on the -X
+    side, pin toward -X, and a detent leaf spring running from the block face x0 toward -X over
+    the flap's cam (+Y side)."""
     x1 = x0 + p.ks_block_w
     sw, za = p.ks_block_r, p.ks_axis_z
     body = box(x0, x1, -sw, sw, 0, za) + cyl_x(0, za, sw, x0, x1)
@@ -132,10 +143,9 @@ def hinge_block(x0=0.0, spring=False, tip=True):
                      (ya0, z_tip), (ya0 + FUSE, z_tip)], x0, x1)
     body += prism_x([(yb1 - FUSE, z_catch), (yb1 + out, z_catch), (yb1 + out, zf),
                      (yb1, z_tip), (yb1 - FUSE, z_tip)], x0, x1)
-    hw = (p.ks_pin_d - 2 * p.ks_snap_interf) / 2
-    sock = c_socket(p.ks_pin_d, 0.0, za, x0 - EPS, x1 + EPS, math.sqrt(sw * sw - hw * hw),
-                    sw + EPS, p.ks_pin_clear, p.ks_snap_interf, p.ks_socket_chamfer)
-    body -= sock
+    # hinge pin on the inner face (coaxial with the hinge axis): the +X face of the plain block
+    # (flap on its +X side), the -X face of the spring block (flap on its -X side)
+    body += pin(x0 if spring else x1, -1.0 if spring else 1.0)
     if spring:
         y_in = p.ks_knuckle_r + p.ks_leaf_clear
         y_out = y_in + p.ks_leaf_t
@@ -158,22 +168,41 @@ def _plate(hw, length):
     return plate.fillet(min(p.ks_flap_corner_r, hw / 2), corners)
 
 
-def flap(width, length, notches, pin_left=True):
+def _hole(x_end, sign):
+    """Teardrop blind hole entering the knuckle at x_end going in direction sign (+1/-1): a
+    circle of ks_hole_d with its point toward +Z (print-up), 45 deg sides, so it prints without
+    droop. Depth ks_hole_depth."""
+    r, za = p.ks_hole_d / 2, p.ks_axis_z
+    t = r * math.sqrt(0.5)
+    xa, xb = x_end - sign * EPS, x_end + sign * p.ks_hole_depth
+    x0, x1 = min(xa, xb), max(xa, xb)
+    return (cyl_x(0, za, r, x0, x1)
+            + prism_x([(-t, za + t), (t, za + t), (0, za + r * math.sqrt(2))], x0, x1))
+
+
+def hole_wall():
+    """Wall between the hole and (a) the knuckle surface above the teardrop point, (b) the
+    notch zone, which stops short of the hole axially."""
+    r = p.ks_hole_d / 2
+    radial = p.ks_knuckle_r - r * math.sqrt(2)
+    axial = (p.ks_cam_len - p.ks_hole_depth) - (p.ks_notch_x0 + p.ks_notch_len)
+    return radial, axial
+
+
+def flap(width, length, notches):
     """Flap: plate (X +-width/2, Y -length..0, underside at Z ks_gap) with a knuckle along the
     hinge edge (tangent to the plate underside), a notched cam of ks_cam_len beyond the +X plate
-    end, and pin stubs at both ends (only the +X one if pin_left is False). `notches` = flap
-    opening angles (degrees); the notch for opening a sits at body angle a, measured from +Y
-    toward +Z, so the spring (+Y side) falls into it when the flap is open by a."""
+    end, and a blind hole in each knuckle end for the hinge pins. `notches` = flap opening angles
+    (degrees); the notch for opening a sits at body angle a, measured from +Y toward +Z, so the
+    spring (+Y side) falls into it when the flap is open by a."""
     hw = width / 2
     rk, za = p.ks_knuckle_r, p.ks_axis_z
     kn = cyl_x(0, za, rk, -hw, hw + p.ks_cam_len)
     for a in notches:
-        kn -= _notch_cutter(a, hw, hw + p.ks_cam_len + EPS)
+        kn -= _notch_cutter(a, hw + p.ks_notch_x0, hw + p.ks_notch_x0 + p.ks_notch_len)
     out = kn + _plate(hw, length)
-    pr = p.ks_pin_d / 2
-    out += cyl_x(0, za, pr, hw + p.ks_cam_len - EPS, hw + p.ks_cam_len + p.ks_pin_len)
-    if pin_left:
-        out += cyl_x(0, za, pr, -hw - p.ks_pin_len, -hw + EPS)
+    out -= _hole(-hw, 1.0)
+    out -= _hole(hw + p.ks_cam_len, -1.0)
     return out.clean()
 
 

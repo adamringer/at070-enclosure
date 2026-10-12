@@ -29,21 +29,23 @@ def _hinge_origin():
 
 
 def coupon_hinge_lid():
-    """40 x 40 piece of flat lid plate with the slot for one spring hinge block."""
+    """Flat piece of lid plate with the slots for both hinge blocks."""
     x0, x1 = p.coupon_hinge_x
     y0, y1 = p.coupon_hinge_y
     plate = box(x0, x1, y0, y1, p.z_rim, p.z_lid_top)
-    xs = kickstand.block_x0s(p.coupon_hinge_w)[1]
-    return (plate - _hinge_origin() * kickstand.slot_box(xs)).clean()
+    for bx in kickstand.block_x0s(p.coupon_hinge_w):
+        plate -= _hinge_origin() * kickstand.slot_box(bx)
+    return plate.clean()
 
 
 def coupon_hinge_flap(opening=0.0):
-    """Flap stub: plate, knuckle with the notched cam (main-flap notches), pin stub at the cam
-    end only; the other knuckle end floats."""
-    f = kickstand.flap(p.coupon_hinge_w, p.coupon_hinge_len, p.ks_main_notches, pin_left=False)
+    """Short flap: plate, knuckle with the notched cam (main-flap notches), a hole in each end."""
+    f = kickstand.flap(p.coupon_hinge_w, p.coupon_hinge_len, p.ks_main_notches)
     return _hinge_origin() * kickstand.pose_flap(f, opening)
 
 
-def coupon_hinge_block(tip=True):
-    xs = kickstand.block_x0s(p.coupon_hinge_w)[1]
-    return _hinge_origin() * kickstand.hinge_block(xs, spring=True, tip=tip)
+def coupon_hinge_blocks(tip=True):
+    """(plain block, spring block) in place on the coupon lid piece."""
+    xp, xs = kickstand.block_x0s(p.coupon_hinge_w)
+    return (_hinge_origin() * kickstand.hinge_block(xp),
+            _hinge_origin() * kickstand.hinge_block(xs, spring=True, tip=tip))

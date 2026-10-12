@@ -25,17 +25,3 @@ def prism_x(pts, x0, x1):
 def cyl_x(y, z, r, x0, x1):
     """Cylinder with its axis parallel to X through (y, z), from x0 to x1."""
     return Pos((x0 + x1) / 2, y, z) * (Rot(Y=90) * Cylinder(r, abs(x1 - x0)))
-
-
-def c_socket(pin_d, y, z, x0, x1, mouth, reach, pin_clear, snap_interf, chamfer):
-    """Cutter for a snap-in C-socket along X, opening toward +Z. Hole diameter
-    pin_d + 2*pin_clear, with an entry slot (width pin_d - 2*snap_interf) leaving the hole
-    toward +Z and a 45 deg lead-in of size `chamfer` at the mouth. `mouth` = distance from the
-    hole axis to the block surface along +Z, measured at the slot edge. `reach` = how far the
-    cutter extends along +Z (curved surfaces need more than `mouth`)."""
-    hw = (pin_d - 2 * snap_interf) / 2
-    w_top = hw + (reach - (mouth - chamfer))      # the lead-in continues at 45 deg to the top
-    uv = [(-hw, 0), (hw, 0), (hw, mouth - chamfer), (w_top, reach), (-w_top, reach),
-          (-hw, mouth - chamfer)]
-    pts = [(y + u, z + v) for u, v in uv]
-    return cyl_x(y, z, pin_d / 2 + pin_clear, x0, x1) + prism_x(pts, x0, x1)
