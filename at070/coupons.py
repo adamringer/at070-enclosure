@@ -34,7 +34,8 @@ def coupon_hinge_lid():
     y0, y1 = p.coupon_hinge_y
     plate = box(x0, x1, y0, y1, p.z_rim, p.z_lid_top)
     for bx in kickstand.block_x0s(p.coupon_hinge_w):
-        plate -= _hinge_origin() * kickstand.slot_box(bx)
+        for sb in kickstand.slot_boxes(bx):
+            plate -= _hinge_origin() * sb
     return plate.clean()
 
 

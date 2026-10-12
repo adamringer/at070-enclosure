@@ -123,26 +123,43 @@ def pin(x_face, sign):
     return body + cone
 
 
+def _legs(x0, x1, s):
+    """Snap-leg pair on the -Y (s = -1) or +Y (s = +1) side: cap, two legs (separated by a
+    slit) and two barbs. The pair is the mirror of the -Y one."""
+    sw = p.ks_block_r
+    ya0, ya1, yb0, yb1 = leg_y()
+    z_tip, z_catch, z_slit = leg_z()
+    out = p.ks_slot_clear + p.ks_barb_catch
+    zf = z_catch - p.ks_barb_flat
+
+    def yy(y):
+        return -s * y if s > 0 else y
+
+    def bx(ya, yb, za_, zb_):
+        return box(x0, x1, min(yy(ya), yy(yb)), max(yy(ya), yy(yb)), za_, zb_)
+
+    res = bx(ya0, -sw + 0.3, z_slit, z_slit + p.ks_cap_t)                        # cap
+    res += bx(ya0, ya1, z_tip, z_slit + FUSE)                                    # leg A (outer)
+    res += bx(yb0, yb1, z_tip, z_slit + FUSE)                                    # leg B (inner)
+    res += prism_x([(yy(ya0 + FUSE), z_catch), (yy(ya0 - out), z_catch), (yy(ya0 - out), zf),
+                    (yy(ya0), z_tip), (yy(ya0 + FUSE), z_tip)], x0, x1)
+    res += prism_x([(yy(yb1 - FUSE), z_catch), (yy(yb1 + out), z_catch), (yy(yb1 + out), zf),
+                    (yy(yb1), z_tip), (yy(yb1 - FUSE), z_tip)], x0, x1)
+    return res
+
+
 def hinge_block(x0=0.0, spring=False, tip=True):
     """Hinge block from x0 to x0 + ks_block_w. Pad on the lid back (Z 0), a hinge pin on the inner
-    face, two snap legs on the -Y side that pass through a lid slot, barbs catching the lid
-    underside. spring=False: flap on the +X side (pin toward +X); spring=True: flap on the -X
+    face, a snap-leg pair on each side of the hinge axis (-Y and +Y), each through its own lid slot,
+    barbs catching the lid underside. spring=False: flap on the +X side (pin toward +X); spring=True: flap on the -X
     side, pin toward -X, and a detent leaf spring running from the block face x0 toward -X over
     the flap's cam (+Y side)."""
     x1 = x0 + p.ks_block_w
     sw, za = p.ks_block_r, p.ks_axis_z
     body = box(x0, x1, -sw, sw, 0, za) + cyl_x(0, za, sw, x0, x1)
-    ya0, ya1, yb0, yb1 = leg_y()
-    z_tip, z_catch, z_slit = leg_z()
-    out = p.ks_slot_clear + p.ks_barb_catch
-    zf = z_catch - p.ks_barb_flat
-    body += box(x0, x1, ya0, -sw + 0.3, z_slit, z_slit + p.ks_cap_t)            # cap
-    body += box(x0, x1, ya0, ya1, z_tip, z_slit + FUSE)                          # leg A
-    body += box(x0, x1, yb0, yb1, z_tip, z_slit + FUSE)                          # leg B
-    body += prism_x([(ya0 + FUSE, z_catch), (ya0 - out, z_catch), (ya0 - out, zf),
-                     (ya0, z_tip), (ya0 + FUSE, z_tip)], x0, x1)
-    body += prism_x([(yb1 - FUSE, z_catch), (yb1 + out, z_catch), (yb1 + out, zf),
-                     (yb1, z_tip), (yb1 - FUSE, z_tip)], x0, x1)
+    z_slit = leg_z()[2]
+    for s in (-1.0, 1.0):                  # one snap-leg pair on each side of the hinge axis
+        body += _legs(x0, x1, s)
     # hinge pin on the inner face (coaxial with the hinge axis): the +X face of the plain block
     # (flap on its +X side), the -X face of the spring block (flap on its -X side)
     body += pin(x0 if spring else x1, -1.0 if spring else 1.0)
@@ -150,7 +167,7 @@ def hinge_block(x0=0.0, spring=False, tip=True):
         y_in = p.ks_knuckle_r + p.ks_leaf_clear
         y_out = y_in + p.ks_leaf_t
         z_top = za + p.ks_leaf_top
-        body += box(x0, x1, sw - 0.3, y_out, 0, z_top)                           # root web
+        body += box(x0, x1, sw - 0.3, y_out, z_slit, z_top)                      # root web (above the +Y legs' slit)
         xt = x0 - p.ks_leaf_len
         body += box(xt, x0 + FUSE, y_in, y_out, 0, z_top)                        # leaf
         if tip:
@@ -206,11 +223,13 @@ def flap(width, length, notches):
     return out.clean()
 
 
-def slot_box(x0):
-    """Lid slot (canonical) for a block starting at x0."""
+def slot_boxes(x0):
+    """The two lid slots (canonical) for a block starting at x0: the -Y pair's and the +Y pair's."""
     c = p.ks_slot_clear
     ya0, _, _, yb1 = leg_y()
-    return box(x0 - c, x0 + p.ks_block_w + c, ya0 - c, yb1 + c, -(p.lid_plate_t + EPS), EPS)
+    z0, z1 = -(p.lid_plate_t + EPS), EPS
+    x0s, x1s = x0 - c, x0 + p.ks_block_w + c
+    return [box(x0s, x1s, ya0 - c, yb1 + c, z0, z1), box(x0s, x1s, -yb1 - c, -ya0 + c, z0, z1)]
 
 
 def pose_flap(shape, opening):
@@ -256,7 +275,7 @@ def slot_cutters():
     res = []
     for place, width in ((main_placement(), p.ks_main_w), (prop_placement(), p.ks_prop_w)):
         for x0 in block_x0s(width):
-            res.append(place * slot_box(x0))
+            res.extend(place * sb for sb in slot_boxes(x0))
     return res
 
 

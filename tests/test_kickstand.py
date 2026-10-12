@@ -63,6 +63,35 @@ def test_closed_kickstand_parts_do_not_touch_each_other(closed):
             assert overlap(closed[a], closed[b]) < 0.05, (a, b)
 
 
+def test_two_slots_per_block_and_both_pairs_catch(lid_part):
+    """Every block has a snap-leg pair on each side of its hinge axis (two slots per block); a
+    block lifted 0.3 mm would drive both pairs' barbs into the lid, so neither side can lift."""
+    from build123d import Pos
+    assert len(ks.slot_cutters()) == 8
+    for name in ("main", "prop"):
+        parts = ks.main_parts() if name == "main" else ks.prop_parts()
+        for key in ("block_plain", "block_spring"):
+            blk = parts[key]
+            lifted = Pos(0, 0, 0.3) * blk
+            bb = blk.bounding_box()
+            # split by the hinge axis plane through the block (axis in the lid plane, along the flap)
+            if name == "main":
+                mid = p.ks_main_y
+                halves = [box(bb.min.X - 1, bb.max.X + 1, bb.min.Y - 1, mid, 0, 40),
+                          box(bb.min.X - 1, bb.max.X + 1, mid, bb.max.Y + 1, 0, 40)]
+            else:
+                mid = p.ks_prop_x
+                halves = [box(bb.min.X - 1, mid, bb.min.Y - 1, bb.max.Y + 1, 0, 40),
+                          box(mid, bb.max.X + 1, bb.min.Y - 1, bb.max.Y + 1, 0, 40)]
+            for h in halves:
+                assert overlap(overlap_solid(lifted, h), lid_part) > 0.3, (name, key)
+
+
+def overlap_solid(a, b):
+    r = a & b
+    return r if r is not None else box(0, 0.001, 0, 0.001, -100, -99.999)
+
+
 def test_slots_only_remove_plate(lid_part):
     """Each slot removes exactly slot area x plate thickness (nothing from lip, ribs, clips)."""
     plain = lid(slots=False)

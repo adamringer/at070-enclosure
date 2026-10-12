@@ -188,11 +188,11 @@ ks_main_len = 56.0        # hinge axis to free end
 ks_main_notches = (0.0, 24.0, 52.0, 74.0, 96.0)   # flap opening angles, degrees
 ks_main_y = outer_y0 + ks_main_h
 # prop (portrait)
-ks_prop_w = 18.0          # plate width along Y
-ks_prop_x = 75.0          # hinge axis X; the plate hangs toward -X when closed
-ks_prop_len = 45.0        # hinge axis to free end
-ks_prop_notches = (0.0, 90.0)
-ks_prop_y_max = 55.4      # outer face of the +Y hinge block (clear of the lid lip)
+ks_prop_w = 14.0          # plate width along Y
+ks_prop_x = 71.0          # hinge axis X; the plate hangs toward -X when closed
+ks_prop_len = 54.0        # hinge axis to free end
+ks_prop_notches = (0.0, 92.0)
+ks_prop_y_max = 54.4      # outer face of the +Y hinge block (clear of the lid lip)
 ks_prop_yc = ks_prop_y_max - (ks_prop_w / 2 + ks_ax_gap + ks_block_w)   # plate center Y
 # stability
 ks_com_margin = 5.0       # min COM distance from the back contact edge and from the foot
