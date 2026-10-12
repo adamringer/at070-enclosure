@@ -1,6 +1,6 @@
 """Lid: back plate with locating lip, six snap clips and four panel press ribs."""
 from build123d import Axis, Face, Part, Pos, Rot, Solid, Vector, Wire
-from at070 import params as p
+from at070 import kickstand, params as p
 from at070.front_shell import clip_positions, outer_solid, wall_frame
 from at070.geom import box
 
@@ -108,7 +108,8 @@ def hdmi_alcove():
     return walls - slot
 
 
-def lid():
+def lid(slots=True):
+    """The lid. slots=False omits the kickstand hinge-block slots (for volume checks)."""
     plate = outer_solid(p.z_rim, p.z_lid_top)
     back = plate.edges().filter_by_position(Axis.Z, p.z_lid_top - 1e-3, p.z_lid_top + 1e-3)
     plate = plate.fillet(p.edge_fillet, back)
@@ -117,4 +118,7 @@ def lid():
     out -= box(p.hdmi_x - p.alcove_hw_in, p.hdmi_x + p.alcove_hw_in,
                p.alcove_y0 + p.alcove_wall, p.outer_y1 + 1, p.z_rim - 1, p.z_lid_top + 1)
     out += hdmi_alcove()
+    if slots:
+        for cutter in kickstand.slot_cutters():
+            out -= cutter
     return out.clean()

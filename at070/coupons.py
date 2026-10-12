@@ -1,5 +1,6 @@
 """Fit-test coupons (assembled coordinates; build.py orients them for printing)."""
-from at070 import params as p
+from build123d import Pos
+from at070 import kickstand, params as p
 from at070.front_shell import front_shell
 from at070.geom import box
 from at070.lid import lid
@@ -20,3 +21,29 @@ def coupon_fit_frame():
 
 def coupon_top_edge_lid():
     return (lid() & _top_box()).clean()
+
+
+def _hinge_origin():
+    """Canonical kickstand frame placed on the lid back, model frame."""
+    return Pos(0, 0, p.z_lid_top)
+
+
+def coupon_hinge_lid():
+    """40 x 40 piece of flat lid plate with the slot for one spring hinge block."""
+    x0, x1 = p.coupon_hinge_x
+    y0, y1 = p.coupon_hinge_y
+    plate = box(x0, x1, y0, y1, p.z_rim, p.z_lid_top)
+    xs = kickstand.block_x0s(p.coupon_hinge_w)[1]
+    return (plate - _hinge_origin() * kickstand.slot_box(xs)).clean()
+
+
+def coupon_hinge_flap(opening=0.0):
+    """Flap stub: plate, knuckle with the notched cam (main-flap notches), pin stub at the cam
+    end only; the other knuckle end floats."""
+    f = kickstand.flap(p.coupon_hinge_w, p.coupon_hinge_len, p.ks_main_notches, pin_left=False)
+    return _hinge_origin() * kickstand.pose_flap(f, opening)
+
+
+def coupon_hinge_block(tip=True):
+    xs = kickstand.block_x0s(p.coupon_hinge_w)[1]
+    return _hinge_origin() * kickstand.hinge_block(xs, spring=True, tip=tip)
