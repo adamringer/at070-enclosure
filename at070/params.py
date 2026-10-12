@@ -52,8 +52,10 @@ panel_clearance = 0.4     # pocket clearance (left/right/top/bottom)
 fpc_relief = 3.0          # extra pocket below panel bottom
 wall = 2.4                # wall thickness
 z_rim = 19.0              # shell rim Z
-corner_r = 4.0            # outer vertical corner radius
-edge_fillet = 1.5         # front/back perimeter fillet
+corner_r = 7.0            # outer vertical corner radius (pocket corners follow, see pocket_r)
+edge_fillet = 2.0         # lid back perimeter fillet (max ~2.2 for the 2.4 plate)
+front_fillet = 3.0        # front (screen face) perimeter fillet
+pocket_r = corner_r - wall  # pocket vertical corner radius (constant wall around the corners)
 # Pocket: smallest rectangle centered on the AA center containing panel+clearance (+FPC relief below)
 _need_x0 = -panel_w / 2 - panel_clearance
 _need_x1 = panel_w / 2 + panel_clearance
@@ -135,6 +137,7 @@ clip_strain_max = 0.015   # allowed cantilever strain (PLA, repeated opening)
 # detent spring is on, and the snap legs are on the -Y side of the socket.
 ks_gap = 0.3              # closed flap underside (and knuckle bottom) above the lid back
 ks_plate_t = 3.0          # flap plate thickness
+ks_flap_corner_r = 5.0    # flap free-end corner radius (capped at width/4)
 ks_knuckle_r = 4.0        # knuckle (and cam) radius, tangent to the plate underside
 ks_axis_z = ks_gap + ks_knuckle_r   # hinge axis height above the lid back (4.3)
 ks_pin_d = 5.0            # pin stub diameter
@@ -177,7 +180,7 @@ ks_case_weight = 3.5      # N, assumed case weight acting at the outline center
 ks_main_w = 120.0         # plate width, centered on the case outline X center
 ks_main_h = 60.0          # hinge axis height above the bottom edge (outer_y0)
 ks_main_len = 56.0        # hinge axis to free end
-ks_main_notches = (0.0, 22.0, 52.0, 74.0, 96.0)   # flap opening angles, degrees
+ks_main_notches = (0.0, 24.0, 52.0, 74.0, 96.0)   # flap opening angles, degrees
 ks_main_y = outer_y0 + ks_main_h
 # prop (portrait)
 ks_prop_w = 18.0          # plate width along Y

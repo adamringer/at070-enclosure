@@ -2,7 +2,7 @@
 import math
 from build123d import Align, Axis, Cylinder, Pos, Rot, Part, Solid, Wire, Face, Vector
 from at070 import params as p
-from at070.geom import box
+from at070.geom import box, rbox
 
 
 def outer_solid(z0, z1):
@@ -46,10 +46,10 @@ def front_shell():
     shell = outer_solid(-p.front_thickness, p.z_rim)
     front_edges = shell.edges().filter_by_position(Axis.Z, -p.front_thickness - 1e-3,
                                                    -p.front_thickness + 1e-3)
-    shell = shell.fillet(p.edge_fillet, front_edges)
+    shell = shell.fillet(p.front_fillet, front_edges)
 
     # panel pocket
-    shell -= box(p.pocket_x0, p.pocket_x1, p.pocket_y0, p.pocket_y1, 0, p.z_rim + 1)
+    shell -= rbox(p.pocket_x0, p.pocket_x1, p.pocket_y0, p.pocket_y1, 0, p.z_rim + 1, p.pocket_r)
 
     # locating blocks (overlap 0.5 into walls to fuse)
     h = p.lb_h

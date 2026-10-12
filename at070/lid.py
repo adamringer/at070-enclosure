@@ -2,7 +2,7 @@
 from build123d import Axis, Face, Part, Pos, Rot, Solid, Vector, Wire
 from at070 import kickstand, params as p
 from at070.front_shell import clip_positions, outer_solid, wall_frame
-from at070.geom import box
+from at070.geom import box, rbox
 
 EMBED = 0.5  # features extend this far into the plate to fuse reliably
 
@@ -69,8 +69,10 @@ def _lip():
     z0, z1 = p.lip_z0, p.z_rim + EMBED
     a = p.lip_inset
     b = p.lip_inset + p.lip_t
-    ring = (box(p.pocket_x0 + a, p.pocket_x1 - a, p.pocket_y0 + a, p.pocket_y1 - a, z0, z1)
-            - box(p.pocket_x0 + b, p.pocket_x1 - b, p.pocket_y0 + b, p.pocket_y1 - b, z0 - 1, z1 + 1))
+    ring = (rbox(p.pocket_x0 + a, p.pocket_x1 - a, p.pocket_y0 + a, p.pocket_y1 - a, z0, z1,
+                 p.pocket_r - a)
+            - rbox(p.pocket_x0 + b, p.pocket_x1 - b, p.pocket_y0 + b, p.pocket_y1 - b,
+                   z0 - 1, z1 + 1, max(p.pocket_r - b, 0.5)))
     cz0, cz1 = z0 - 1, p.z_rim   # cutters stop at the plate face
     # notch interruptions
     for x, w in ((p.hdmi_x, p.hdmi_notch_w), (p.power_x, p.power_notch_w)):
