@@ -7,7 +7,7 @@ side. `main_parts` / `prop_parts` place canonical parts on the lid in the case's
 (see README); build.py mirrors them to the real parts like the lid.
 """
 import math
-from build123d import Pos, Rot
+from build123d import Axis, Pos, Rot
 from at070 import params as p
 from at070.geom import box, c_socket, cyl_x, prism_x
 
@@ -150,6 +150,14 @@ def hinge_block(x0=0.0, spring=False, tip=True):
     return body.clean()
 
 
+def _plate(hw, length):
+    """Flap plate with rounded free-end corners (the free-end edge stays sharp: it is the foot)."""
+    z0, z1 = p.ks_gap, p.ks_gap + p.ks_plate_t
+    plate = box(-hw, hw, -length, 0, z0, z1)
+    corners = plate.edges().filter_by(Axis.Z).filter_by_position(Axis.Y, -length - 1e-3, -length + 1e-3)
+    return plate.fillet(min(p.ks_flap_corner_r, hw / 2), corners)
+
+
 def flap(width, length, notches, pin_left=True):
     """Flap: plate (X +-width/2, Y -length..0, underside at Z ks_gap) with a knuckle along the
     hinge edge (tangent to the plate underside), a notched cam of ks_cam_len beyond the +X plate
@@ -161,7 +169,7 @@ def flap(width, length, notches, pin_left=True):
     kn = cyl_x(0, za, rk, -hw, hw + p.ks_cam_len)
     for a in notches:
         kn -= _notch_cutter(a, hw, hw + p.ks_cam_len + EPS)
-    out = kn + box(-hw, hw, -length, 0, p.ks_gap, p.ks_gap + p.ks_plate_t)
+    out = kn + _plate(hw, length)
     pr = p.ks_pin_d / 2
     out += cyl_x(0, za, pr, hw + p.ks_cam_len - EPS, hw + p.ks_cam_len + p.ks_pin_len)
     if pin_left:

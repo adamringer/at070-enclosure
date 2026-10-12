@@ -70,7 +70,7 @@ The kickstand parts are modeled in the case's model frame (and a canonical hinge
 `at070/kickstand.py`); `build.py` mirrors them like the lid.
 
 - **Main flap (landscape):** 120 wide, hinge 60 above the bottom edge, 56 from hinge to free
-  end. Clicks at 22, 52, 74 and 96 degrees of opening (closed, flat against the lid, is the
+  end. Clicks at 24, 52, 74 and 96 degrees of opening (closed, flat against the lid, is the
   first click). Standing on the bottom long edge it leans back at about 16, 25, 35 and 45 degrees.
 - **Prop (portrait):** 18 wide, hinge near the +X end of the lid back, hanging toward -X when
   closed. One click at 90 degrees opening gives about 12.5 degrees lean back with the case on
