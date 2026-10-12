@@ -41,7 +41,7 @@ real, right-handed geometry. Keep `params.py` in front-view terms.
 | `hinge_block_spring` | same, pin and detent leaf both grow straight up. Print 2 |
 | `coupon_fit_frame` | front face down; checks panel outline, window, FPC relief, and (full-height top-edge section) HDMI/power notches with the panel in place and one clip slot |
 | `coupon_top_edge_lid` | back face down; snaps onto the fit frame's top-edge section to check the clip |
-| `coupon_hinge_lid` | back face down; 50 x 40 piece of lid plate with both block slots |
+| `coupon_hinge_lid` | back face down; 50 x 40 piece of lid plate with the four slots of both blocks |
 | `coupon_hinge_flap` | flat; 25 wide plate, knuckle with cam and a hole at each end; use with one `hinge_block` and one `hinge_block_spring` |
 
 Suggested settings: 0.4 mm nozzle, 0.2 mm layers, 6 perimeters for the 2.4 mm walls
@@ -60,8 +60,10 @@ of each. The same block fits both flaps.
 ## Kickstand
 
 Nothing protrudes from the lid back, so the lid still prints back face down without supports.
-The lid has four through-slots (one per hinge block). A hinge block sits on the lid back; its two
-snap legs go through the slot and the barbs catch the lid underside (snaps in once, meant to stay).
+The lid has eight through-slots (two per hinge block). A hinge block sits on the lid back; it has a
+pair of snap legs on each side of the hinge axis, each pair through its own slot, and the barbs
+catch the lid underside (snaps in once, meant to stay). Holding the block down on both sides of the
+axis keeps it from lifting when the flap is pushed.
 The hinge line is 8 mm tall (8 mm knuckle). Each block has a 4 mm pin on its inner face that enters a blind hole in the flap's knuckle end
 (4.4 mm hole, 4 mm engagement), and, on the spring
 variant, a leaf spring whose rounded tip clicks into steep-flanked V notches (60 degree flanks) on the flap's cam.
@@ -73,8 +75,8 @@ The kickstand parts are modeled in the case's model frame (and a canonical hinge
 - **Main flap (landscape):** 120 wide, hinge 60 above the bottom edge, 56 from hinge to free
   end. Clicks at 24, 52, 74 and 96 degrees of opening (closed, flat against the lid, is the
   first click). Standing on the bottom long edge it leans back at about 16, 25, 35 and 45 degrees.
-- **Prop (portrait):** 18 wide, hinge near the +X end of the lid back, hanging toward -X when
-  closed. One click at 90 degrees opening gives about 12.5 degrees lean back with the case on
+- **Prop (portrait):** 14 wide, hinge near the +X end of the lid back, hanging toward -X when
+  closed. One click at 92 degrees opening gives about 12.5 degrees lean back with the case on
   its +X short edge.
 - The case rests on its back-bottom edge and the flap's free end (a case that leans back pivots
   on the back edge). A rubber or felt dot on the free end helps on smooth desks.
@@ -87,7 +89,7 @@ The kickstand parts are modeled in the case's model frame (and a canonical hinge
 4. The HDMI plug goes in from outside through its notch in the top wall.
 5. Kickstand: slide the two blocks' pins into the knuckle ends of the flap (spring block at the
    cam end, pins pointing at each other), then set the whole assembly on the lid back and press
-   both blocks' legs into their slots together, square to the lid, until the barbs click. The
+   both blocks' two leg pairs into their four slots together, square to the lid, until the barbs click. The
    slots hold the blocks apart and so keep the flap captured.
 6. Landscape: set the case on its bottom long edge (the flex-cable side), swing the main flap
    out to a click and lean the case back onto it. Portrait: stand it on the +X short edge and
