@@ -126,68 +126,74 @@ rib_t = 1.6               # rib thickness
 rib_inset = 1.0           # rib inset from panel outline corners
 clip_strain_max = 0.015   # allowed cantilever strain (PLA, repeated opening)
 
-# ---- Stand ----
-# Three printed parts: base (with pivot towers and a notched rack), cradle (holds the case,
-# tilts about two pins), strut (props the cradle; its foot clicks into a rack notch).
-# Stand frame: X along the case edge, +Y toward the back, Z up, base underside on Z = 0.
-# Cradle frame: s = front to back, t = up along the case (equal to Y and Z at tilt 0).
-stand_base_t = 4.0        # base plate thickness
-stand_corner_r = 6.0      # base plate corner radius
-groove_clearance = 1.0    # groove width minus case depth
-case_depth = front_thickness + z_lid_top        # 23.4
-groove_w = case_depth + groove_clearance        # 24.4
-com_min_edge = 25.0       # min COM distance from base front/back edges
-tilt_step_deg = 5.0       # click-in step
-tilt_max_deg = 45.0       # max tilt back from vertical
-pivot_clear = 0.25        # radial clearance, pin in socket hole
-snap_interf = 0.35        # snap interference per side (slot narrower than the pin)
-socket_chamfer = 1.0      # 45 deg lead-in at the slot mouth
-# cradle
-cradle_w = 88.0           # cradle width (X); must be < outer_h
-cradle_floor_t = 9.0      # floor thickness (t -9..0); pivot axis sits 6 below the case bottom
-cradle_lip_wall = 4.0     # front lip thickness
-cradle_lip_h = 10.0       # front lip height above the groove floor
-cradle_rest_t = 4.0       # back rest thickness
-cradle_rest_h = 80.0      # back rest height above the groove floor
-cradle_chamfer = 8.0      # 45 deg chamfer on the floor's back-bottom edge (lowers pivot_z)
-cradle_s_total = cradle_lip_wall + groove_w + cradle_rest_t   # 32.4
-pivot_pin_d = 6.0         # cradle pivot pin diameter
-pivot_pin_r = pivot_pin_d / 2
-pivot_pin_s = 3.0         # pivot axis position s
-pivot_pin_t = -cradle_floor_t + pivot_pin_r    # pivot axis position t (-6): pins tangent to floor
-pivot_side_gap = 0.5      # cradle side face to tower
-pivot_block_t = 6.0       # tower thickness (X)
-pivot_pin_extra = 0.5     # pin protrusion beyond the tower outer face
-pivot_pin_flat_w = 0.6    # width of the flat at the pin bottom
-strut_attach_t = 70.0     # strut pin axis t on the rest
-strut_lug_gap = 0.5       # strut side to lug
-strut_lug_t = 5.0         # lug thickness (X)
-strut_lug_out = 9.0       # lug length behind the rest
-strut_pin_to_end = 4.0    # strut pin axis to the lug's back end
-strut_lug_wall = 2.0      # lug material around the socket hole
-# base
-base_front_margin = 25.0  # base front edge to pivot axis (Y)
-base_back_margin = 12.0   # last notch to base back edge
-swing_clearance = 2.0     # min gap, cradle lowest point to base top over the whole swing
-tower_wall = 2.0          # tower material around the socket hole
-tower_case_gap = 0.8      # min radial gap, case to tower
-rack_h = 4.0              # rack height above base top
-rack_extra_w = 4.0        # rack width beyond strut width
-rack_end_margin = 4.0     # rack extends this far beyond first/last notch (plus notch_r)
-notch_depth = 2.5         # notch depth below rack top
-notch_extra_r = 0.3       # notch radius minus foot radius
-notch_min_gap = 1.2       # min wall between neighboring notches
-label_size = 4.5          # angle label text height
-label_h = 0.6             # label emboss height
-label_x = 33.0            # label center X (beside the rack)
-# strut
-strut_w = 40.0            # strut width (X)
-strut_t = 5.0             # strut thickness
-strut_len = 95.0          # pin axis to foot axis
-strut_pin_d = 5.0         # strut top pin diameter
-foot_r = 2.0              # strut foot radius
-foot_toe = 1.3            # foot sticks out below the bar's lower face (bar clears the rack)
-notch_r = foot_r + notch_extra_r
+# ---- Kickstand ----
+# Built into the lid back: a main flap (landscape, several click positions) and a small prop
+# (portrait, one click position). Each flap has a knuckle with a pin stub at both ends that
+# snaps into a hinge block; the blocks snap into slots through the lid plate. All dimensions
+# are in a canonical frame: hinge axis along X through (Y 0, Z ks_axis_z above the lid back),
+# the flap hangs toward -Y when closed, the lid back is the plane Z = 0, +Y is the side the
+# detent spring is on, and the snap legs are on the -Y side of the socket.
+ks_gap = 0.3              # closed flap underside (and knuckle bottom) above the lid back
+ks_plate_t = 3.0          # flap plate thickness
+ks_knuckle_r = 4.0        # knuckle (and cam) radius, tangent to the plate underside
+ks_axis_z = ks_gap + ks_knuckle_r   # hinge axis height above the lid back (4.3)
+ks_pin_d = 5.0            # pin stub diameter
+ks_pin_clear = 0.25       # radial clearance, pin in socket hole
+ks_snap_interf = 0.35     # snap interference per side (slot narrower than the pin)
+ks_socket_chamfer = 1.0   # 45 deg lead-in at the slot mouth
+ks_socket_wall = 1.4      # block material around the socket hole
+ks_ax_gap = 0.5           # axial gap, knuckle end to block
+ks_block_w = 5.0          # block width along the hinge axis (also leg width)
+ks_pin_len = ks_ax_gap + ks_block_w - 0.5   # pin stub length (ends 0.5 short of the block face)
+ks_cam_len = 11.0         # notched cam length at one end of the knuckle
+ks_block_r = ks_pin_d / 2 + ks_pin_clear + ks_socket_wall   # block half width / top radius
+# hinge block snap legs (flex once, at assembly)
+ks_leg_t = 1.2            # leg thickness
+ks_leg_slit = 2.0         # gap between the two legs
+ks_leg_chan = 0.6         # gap between the inner leg and the block body
+ks_leg_len = 7.4          # leg length from the slit top to the barb catch face
+ks_slot_clear = 0.2       # lid slot clearance per side
+ks_barb_catch = 0.8       # barb overlap under the lid
+ks_barb_flat = 0.3        # barb flat height below the catch face
+ks_leg_play = 0.05        # block lift play: catch face this far below the lid underside
+ks_cap_t = 1.2            # cap thickness above the slit
+ks_leg_strain_max = 0.03  # allowed snap-leg strain (one-time assembly)
+# detent: V notches with steep flanks on the cam, a tip riding in them on a stiff leaf spring
+ks_notch_depth = 0.4      # tip drop from riding on the cam surface to seated in a notch
+ks_flank_deg = 60.0       # notch flank angle from the cam surface tangent (steeper = holds more)
+ks_notch_apex_r = 0.25    # rounding radius at the bottom of the V
+ks_notch_wall = 0.5       # min wall between neighboring notches at the cam surface
+ks_tip_r = 0.45           # spring tip radius
+ks_tip_len = 3.0          # spring tip length along the axis
+ks_preload = 0.0          # extra leaf deflection when the tip is seated in a notch
+ks_leaf_t = 2.4           # leaf spring thickness
+ks_leaf_len = 10.0        # leaf spring length (root at the block face)
+ks_leaf_clear = 0.3       # leaf inner face to the cam surface
+ks_leaf_top = 3.7         # leaf top above the hinge axis (leaf height ks_axis_z + this)
+ks_leaf_strain_max = 0.015   # allowed leaf strain (flexes on every click)
+ks_leaf_E = 2500.0        # PLA modulus used for the holding-torque estimate, N/mm^2 (estimate)
+ks_case_weight = 3.5      # N, assumed case weight acting at the outline center
+# main flap (landscape)
+ks_main_w = 120.0         # plate width, centered on the case outline X center
+ks_main_h = 60.0          # hinge axis height above the bottom edge (outer_y0)
+ks_main_len = 56.0        # hinge axis to free end
+ks_main_notches = (0.0, 22.0, 52.0, 74.0, 96.0)   # flap opening angles, degrees
+ks_main_y = outer_y0 + ks_main_h
+# prop (portrait)
+ks_prop_w = 18.0          # plate width along Y
+ks_prop_x = 75.0          # hinge axis X; the plate hangs toward -X when closed
+ks_prop_len = 45.0        # hinge axis to free end
+ks_prop_notches = (0.0, 90.0)
+ks_prop_y_max = 55.4      # outer face of the +Y hinge block (clear of the lid lip)
+ks_prop_yc = ks_prop_y_max - (ks_prop_w / 2 + ks_ax_gap + ks_block_w)   # plate center Y
+# stability
+ks_com_margin = 5.0       # min COM distance from the back contact edge and from the foot
+ks_tilt_min = 16.0        # landscape: tilts must reach this low ...
+ks_tilt_max = 43.0        # ... and this high
+ks_lean_min = 12.0        # portrait lean range
+ks_lean_max = 13.5
+ks_assembly_tilt = 30.0   # kickstand_assembly.step uses the main-flap notch nearest this tilt
+ks_sweep_step = 5.0       # sampling step for the rotation clearance check, degrees
 
 # ---- Coupons ----
 coupon_fit_z = 6.5        # fit-frame cut height
@@ -195,3 +201,9 @@ coupon_box = (-72.0, 10.0, 30.0, 65.0)   # x0, x1, y0, y1 of top-edge coupon
 
 # ---- Printer ----
 bed_limit = 250.0
+
+# ---- Hinge coupon (canonical frame of the kickstand) ----
+coupon_hinge_w = 19.0     # coupon flap plate width (plus the cam, the knuckle is 30 long)
+coupon_hinge_len = 20.0   # coupon flap plate length
+coupon_hinge_x = (-12.0, 28.0)   # lid piece X range
+coupon_hinge_y = (-22.0, 18.0)   # lid piece Y range
