@@ -41,9 +41,12 @@ def printable_parts():
         # vertical): every layer is the same profile, so no supports; the spring leaf grows up.
         "hinge_block": _sit(Rot(Y=90) * to_world(kickstand.hinge_block())),
         "hinge_block_spring": _sit(Rot(Y=-90) * to_world(kickstand.hinge_block(spring=True))),
+        # Wedge bars print lying on their side: the taper and pull tab are in the bed plane.
+        "wedge_bar": _sit(Rot(Y=90) * to_world(kickstand.wedge_bar())),
         "coupon_fit_frame": _on_bed(coupons.coupon_fit_frame()),
         "coupon_top_edge_lid": flip(coupons.coupon_top_edge_lid()),
         # hinge coupon: this lid piece + coupon_hinge_flap + one hinge_block + one hinge_block_spring
+        # + two wedge_bar
         "coupon_hinge_lid": flip(coupons.coupon_hinge_lid()),
         "coupon_hinge_flap": _on_bed(kickstand.flap(p.coupon_hinge_w, p.coupon_hinge_len,
                                                     p.ks_main_notches)),

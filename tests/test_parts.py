@@ -32,7 +32,7 @@ def overlap(a, b):
 
 
 PRINTED = ["front_shell", "lid", "kickstand_flap", "kickstand_prop", "hinge_block",
-           "hinge_block_spring", "coupon_fit_frame", "coupon_top_edge_lid", "coupon_hinge_lid",
+           "hinge_block_spring", "wedge_bar", "coupon_fit_frame", "coupon_top_edge_lid", "coupon_hinge_lid",
            "coupon_hinge_flap"]
 
 

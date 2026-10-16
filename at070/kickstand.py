@@ -1,10 +1,11 @@
-"""Built-in kickstand: main flap (landscape), prop (portrait) and snap-in hinge blocks.
+"""Built-in kickstand: main flap (landscape), prop (portrait), hinge blocks and the wedge bars that
+clamp the blocks to the lid.
 
 Canonical frame (used for every kickstand part before it is placed on the lid): hinge axis along
 X through (Y 0, Z ks_axis_z), lid back plane at Z = 0 (the lid is at negative Z), the flap hangs
-toward -Y when closed, the detent spring is on the +Y side of the axis, the snap legs on the -Y
-side. `main_parts` / `prop_parts` place canonical parts on the lid in the case's model frame
-(see README); build.py mirrors them to the real parts like the lid.
+toward -Y when closed, the detent spring is on the +Y side of the axis, and each block has a post
+through the lid on each side. `main_parts` / `prop_parts` place canonical parts on the lid in the
+case's model frame (see README); build.py mirrors them to the real parts like the lid.
 """
 import math
 from build123d import Axis, Cone, Pos, Rot
@@ -17,26 +18,28 @@ FUSE = 0.1         # overlap used to fuse touching solids
 
 # ---------------------------------------------------------------- derived block geometry
 
-def leg_y():
-    """Y positions (canonical) of the two snap legs: (yA0, yA1, yB0, yB1). Leg A is the outer
-    one (barb toward -Y), leg B the inner one (barb toward +Y)."""
-    yb1 = -p.ks_block_r - p.ks_leg_chan
-    yb0 = yb1 - p.ks_leg_t
-    ya1 = yb0 - p.ks_leg_slit
-    ya0 = ya1 - p.ks_leg_t
-    return ya0, ya1, yb0, yb1
+def bar_ends():
+    """Canonical Y of the seated wedge bar: (head end, leading end). The bar goes in from the
+    -Y side (thick end, pull tab) toward +Y."""
+    return -p.ks_post_out - p.ks_bar_travel, p.ks_post_out + p.ks_bar_over
 
 
-def leg_z():
-    """Z positions (canonical, lid back = 0) of the leg: (z_tip, z_catch, z_slit_top)."""
-    z_catch = -(p.lid_plate_t + p.ks_leg_play)
-    out = p.ks_slot_clear + p.ks_barb_catch
-    return z_catch - p.ks_barb_flat - out, z_catch, z_catch + p.ks_leg_len
+def bar_t(y):
+    """Wedge bar thickness at canonical Y when seated (grows toward the head)."""
+    return p.ks_bar_t0 + p.ks_bar_taper * (bar_ends()[1] - y)
 
 
-def leg_strain():
-    """Snap-leg strain at assembly: 1.5 * t * y / L^2, y = barb overlap past the slot edge."""
-    return 1.5 * p.ks_leg_t * p.ks_barb_catch / p.ks_leg_len ** 2
+def bar_bottom(y):
+    """Bar underside Z (canonical) at Y: the bar's top is on the lid underside (Z -lid_plate_t),
+    and the post holes' floors follow this line, so the bar clamps both posts with no play."""
+    return -p.lid_plate_t - bar_t(y)
+
+
+def post_tip_z(s):
+    """Tip Z of the post on the -Y (s = -1) or +Y (s = +1) side: ks_post_floor below the hole
+    floor where the bar is thickest (the post's -Y face)."""
+    y = -p.ks_post_out if s < 0 else p.ks_post_in
+    return bar_bottom(y) - p.ks_post_floor
 
 
 def leaf_strain():
@@ -123,43 +126,51 @@ def pin(x_face, sign):
     return body + cone
 
 
-def _legs(x0, x1, s):
-    """Snap-leg pair on the -Y (s = -1) or +Y (s = +1) side: cap, two legs (separated by a
-    slit) and two barbs. The pair is the mirror of the -Y one."""
-    sw = p.ks_block_r
-    ya0, ya1, yb0, yb1 = leg_y()
-    z_tip, z_catch, z_slit = leg_z()
-    out = p.ks_slot_clear + p.ks_barb_catch
-    zf = z_catch - p.ks_barb_flat
+def _post(x0, x1, s):
+    """Ear and post on the -Y (s = -1) or +Y (s = +1) side: the ear joins the block body above
+    the lid back, the post goes down through the lid slot, with a lead-in on its Y faces."""
+    sw, c = p.ks_block_r, p.ks_post_chamfer
+    y_in, y_out = s * p.ks_post_in, s * p.ks_post_out
+    zt = post_tip_z(s)
+    ear = box(x0, x1, min(s * (sw - 0.3), y_out), max(s * (sw - 0.3), y_out), 0, p.ks_ear_top)
+    post = prism_x([(y_in, FUSE), (y_out, FUSE), (y_out, zt + c), (y_out - s * c, zt),
+                    (y_in + s * c, zt), (y_in, zt + c)], x0, x1)
+    return ear + post
 
-    def yy(y):
-        return -s * y if s > 0 else y
 
-    def bx(ya, yb, za_, zb_):
-        return box(x0, x1, min(yy(ya), yy(yb)), max(yy(ya), yy(yb)), za_, zb_)
+def bar_hole(x0):
+    """Hole for the wedge bar through both posts of the block starting at x0 (canonical): roof
+    ks_hole_roof above the lid underside, floor along bar_bottom()."""
+    xc = x0 + p.ks_block_w / 2
+    h = p.ks_bar_w / 2 + p.ks_bar_clear
+    ya, yb = -p.ks_post_out - EPS, p.ks_post_out + EPS
+    zr = -p.lid_plate_t + p.ks_hole_roof
+    return prism_x([(ya, zr), (yb, zr), (yb, bar_bottom(yb)), (ya, bar_bottom(ya))], xc - h, xc + h)
 
-    res = bx(ya0, -sw + 0.3, z_slit, z_slit + p.ks_cap_t)                        # cap
-    res += bx(ya0, ya1, z_tip, z_slit + FUSE)                                    # leg A (outer)
-    res += bx(yb0, yb1, z_tip, z_slit + FUSE)                                    # leg B (inner)
-    res += prism_x([(yy(ya0 + FUSE), z_catch), (yy(ya0 - out), z_catch), (yy(ya0 - out), zf),
-                    (yy(ya0), z_tip), (yy(ya0 + FUSE), z_tip)], x0, x1)
-    res += prism_x([(yy(yb1 - FUSE), z_catch), (yy(yb1 + out), z_catch), (yy(yb1 + out), zf),
-                    (yy(yb1), z_tip), (yy(yb1 - FUSE), z_tip)], x0, x1)
-    return res
+
+def wedge_bar(x0=0.0):
+    """Wedge bar seated in the block starting at x0 (canonical): top on the lid underside, the
+    underside tapering per bar_bottom(), and a pull tab hanging down at the thick (-Y) end."""
+    xc = x0 + p.ks_block_w / 2
+    yh, yl = bar_ends()
+    zl = -p.lid_plate_t
+    ztab = bar_bottom(yh) - p.ks_bar_tab
+    pts = [(yl, zl), (yh - p.ks_bar_head_t, zl), (yh - p.ks_bar_head_t, ztab), (yh, ztab),
+           (yh, bar_bottom(yh)), (yl, bar_bottom(yl))]
+    return prism_x(pts, xc - p.ks_bar_w / 2, xc + p.ks_bar_w / 2)
 
 
 def hinge_block(x0=0.0, spring=False, tip=True):
     """Hinge block from x0 to x0 + ks_block_w. Pad on the lid back (Z 0), a hinge pin on the inner
-    face, a snap-leg pair on each side of the hinge axis (-Y and +Y), each through its own lid slot,
-    barbs catching the lid underside. spring=False: flap on the +X side (pin toward +X); spring=True: flap on the -X
-    side, pin toward -X, and a detent leaf spring running from the block face x0 toward -X over
-    the flap's cam (+Y side)."""
+    face, a rigid post on each side of the hinge axis (-Y and +Y), each through its own lid slot,
+    with a hole for the wedge bar that clamps the block to the lid. spring=False: flap on the +X
+    side (pin toward +X); spring=True: flap on the -X side, pin toward -X, and a detent leaf
+    spring running from the block face x0 toward -X over the flap's cam (+Y side)."""
     x1 = x0 + p.ks_block_w
     sw, za = p.ks_block_r, p.ks_axis_z
     body = box(x0, x1, -sw, sw, 0, za) + cyl_x(0, za, sw, x0, x1)
-    z_slit = leg_z()[2]
-    for s in (-1.0, 1.0):                  # one snap-leg pair on each side of the hinge axis
-        body += _legs(x0, x1, s)
+    for s in (-1.0, 1.0):                  # one post on each side of the hinge axis
+        body += _post(x0, x1, s)
     # hinge pin on the inner face (coaxial with the hinge axis): the +X face of the plain block
     # (flap on its +X side), the -X face of the spring block (flap on its -X side)
     body += pin(x0 if spring else x1, -1.0 if spring else 1.0)
@@ -167,14 +178,14 @@ def hinge_block(x0=0.0, spring=False, tip=True):
         y_in = p.ks_knuckle_r + p.ks_leaf_clear
         y_out = y_in + p.ks_leaf_t
         z_top = za + p.ks_leaf_top
-        body += box(x0, x1, sw - 0.3, y_out, z_slit, z_top)                      # root web (above the +Y legs' slit)
+        body += box(x0, x1, sw - 0.3, y_out, p.ks_ear_top - FUSE, z_top)         # root web (above the +Y ear)
         xt = x0 - p.ks_leaf_len
         body += box(xt, x0 + FUSE, y_in, y_out, 0, z_top)                        # leaf
         if tip:
             ty = tip_rest_y()
             body += cyl_x(ty, za, p.ks_tip_r, xt, xt + p.ks_tip_len)
             body += box(xt, xt + p.ks_tip_len, ty, y_in + FUSE, za - p.ks_tip_r, za + p.ks_tip_r)
-    return body.clean()
+    return (body - bar_hole(x0)).clean()
 
 
 def _plate(hw, length):
@@ -224,12 +235,11 @@ def flap(width, length, notches):
 
 
 def slot_boxes(x0):
-    """The two lid slots (canonical) for a block starting at x0: the -Y pair's and the +Y pair's."""
-    c = p.ks_slot_clear
-    ya0, _, _, yb1 = leg_y()
+    """The two lid slots (canonical) for a block starting at x0: the -Y post's and the +Y post's."""
+    c, yi, yo = p.ks_slot_clear, p.ks_post_in, p.ks_post_out
     z0, z1 = -(p.lid_plate_t + EPS), EPS
     x0s, x1s = x0 - c, x0 + p.ks_block_w + c
-    return [box(x0s, x1s, ya0 - c, yb1 + c, z0, z1), box(x0s, x1s, -yb1 - c, -ya0 + c, z0, z1)]
+    return [box(x0s, x1s, -yo - c, -yi + c, z0, z1), box(x0s, x1s, yi - c, yo + c, z0, z1)]
 
 
 def pose_flap(shape, opening):
@@ -259,7 +269,9 @@ def _assembly(place, width, length, notches, opening, tip):
     xp, xs = block_x0s(width)
     return {"flap": place * pose_flap(flap(width, length, notches), opening),
             "block_plain": place * hinge_block(xp),
-            "block_spring": place * hinge_block(xs, spring=True, tip=tip)}
+            "block_spring": place * hinge_block(xs, spring=True, tip=tip),
+            "bar_plain": place * wedge_bar(xp),
+            "bar_spring": place * wedge_bar(xs)}
 
 
 def main_parts(opening=0.0, tip=True):

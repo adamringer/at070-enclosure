@@ -46,7 +46,9 @@ def printable():
 # ---- constraint 1: closed state, assembled on the lid
 
 @pytest.mark.parametrize("name", ["main_flap", "main_block_plain", "main_block_spring",
-                                  "prop_flap", "prop_block_plain", "prop_block_spring"])
+                                  "main_bar_plain", "main_bar_spring",
+                                  "prop_flap", "prop_block_plain", "prop_block_spring",
+                                  "prop_bar_plain", "prop_bar_spring"])
 def test_closed_no_interference(closed, shell, lid_part, name):
     part = closed[name]
     assert part.is_valid and len(part.solids()) == 1
@@ -63,16 +65,20 @@ def test_closed_kickstand_parts_do_not_touch_each_other(closed):
             assert overlap(closed[a], closed[b]) < 0.05, (a, b)
 
 
-def test_two_slots_per_block_and_both_pairs_catch(lid_part):
-    """Every block has a snap-leg pair on each side of its hinge axis (two slots per block); a
-    block lifted 0.3 mm would drive both pairs' barbs into the lid, so neither side can lift."""
+def test_two_slots_per_block_and_bar_clamps_both_posts(lid_part):
+    """Every block has a post on each side of its hinge axis (two slots per block) and a wedge bar
+    through both posts along the lid underside: with the block lifted 0.05 mm, both posts' hole
+    floors run into the bar, and the bar lifted 0.05 mm runs into the lid, so neither side of the
+    block can lift. The bar has side clearance in the holes."""
     from build123d import Pos
     assert len(ks.slot_cutters()) == 8
     for name in ("main", "prop"):
         parts = ks.main_parts() if name == "main" else ks.prop_parts()
-        for key in ("block_plain", "block_spring"):
-            blk = parts[key]
-            lifted = Pos(0, 0, 0.3) * blk
+        for key in ("plain", "spring"):
+            blk, bar = parts[f"block_{key}"], parts[f"bar_{key}"]
+            assert overlap(blk, bar) < 0.01, (name, key)
+            assert overlap(Pos(0, 0, 0.05) * bar, lid_part) > 0.3, (name, key)
+            lifted = Pos(0, 0, 0.05) * blk
             bb = blk.bounding_box()
             # split by the hinge axis plane through the block (axis in the lid plane, along the flap)
             if name == "main":
@@ -84,7 +90,29 @@ def test_two_slots_per_block_and_both_pairs_catch(lid_part):
                 halves = [box(bb.min.X - 1, mid, bb.min.Y - 1, bb.max.Y + 1, 0, 40),
                           box(mid, bb.max.X + 1, bb.min.Y - 1, bb.max.Y + 1, 0, 40)]
             for h in halves:
-                assert overlap(overlap_solid(lifted, h), lid_part) > 0.3, (name, key)
+                assert overlap(overlap_solid(lifted, h), bar) > 0.05, (name, key)
+            d = p.ks_bar_clear - 0.02
+            moves = [Pos(d, 0, 0), Pos(-d, 0, 0)] if name == "main" else [Pos(0, d, 0), Pos(0, -d, 0)]
+            for m in moves:
+                assert overlap(m * bar, blk) < 0.01, (name, key)
+
+
+def test_slots_match_printed_lid():
+    """The lid was printed 2026-10-11 and must not need a reprint: each slot stays 5.16 x 4.56,
+    4.52 to 9.08 from the hinge axis on both sides."""
+    for x0 in (0.0, 3.0):
+        for sb, (y0, y1) in zip(ks.slot_boxes(x0), ((-9.08, -4.52), (4.52, 9.08))):
+            bb = sb.bounding_box()
+            assert (bb.min.X, bb.max.X) == pytest.approx((x0 - 0.08, x0 + 5.08))
+            assert (bb.min.Y, bb.max.Y) == pytest.approx((y0, y1))
+
+
+def test_wedge_bar_self_locking_and_takes_up_play():
+    """A 1:16 taper stays put under friction (PLA on PLA, mu ~0.2-0.3); ks_bar_travel lets a loose
+    bar go further in and take up at least 0.1 mm of play."""
+    assert p.ks_bar_taper <= 0.1
+    assert p.ks_bar_taper * p.ks_bar_travel >= 0.1
+    assert ks.bar_t(ks.bar_ends()[1]) == pytest.approx(p.ks_bar_t0)
 
 
 def overlap_solid(a, b):
@@ -103,18 +131,20 @@ def test_slots_only_remove_plate(lid_part):
     assert removed == pytest.approx(expected, abs=0.5)
 
 
-def test_slot_and_leg_clearances():
-    """Legs (slot footprint grown by the clearance) stay clear of the board keep-out, the lip
-    zone, press ribs, clips and the alcove. Checked on the block's leg envelope in XY."""
+def test_slot_and_post_clearances():
+    """Posts (slot footprint grown by the clearance) stay clear of the board keep-out, the lip
+    zone, press ribs, clips and the alcove, down to the post tips. Checked on the post envelope
+    in XY; the bars are checked in the closed-state tests."""
     plain = lid(slots=False)
+    z_low = p.z_lid_top + min(ks.post_tip_z(-1), ks.post_tip_z(1))
     for c in ks.slot_cutters():
         bb = c.bounding_box()
-        env = box(bb.min.X, bb.max.X, bb.min.Y, bb.max.Y, p.z_rim - 2.5, p.z_rim)
+        env = box(bb.min.X, bb.max.X, bb.min.Y, bb.max.Y, z_low, p.z_rim)
         assert overlap(env, mocks.board_keepout()) < 0.01
         assert overlap(env, plain) < 0.01          # lip, ribs, clips, alcove live under the plate
         gap = 0.3
         env2 = box(bb.min.X - gap, bb.max.X + gap, bb.min.Y - gap, bb.max.Y + gap,
-                   p.z_rim - 2.5, p.z_rim)
+                   z_low, p.z_rim)
         assert overlap(env2, plain) < 0.01
 
 
@@ -271,14 +301,11 @@ def test_notch_flank_steepness():
     assert drop == pytest.approx(p.ks_notch_depth, abs=1e-9)
 
 
-def test_snap_leg_strain():
-    assert ks.leg_strain() <= p.ks_leg_strain_max
-
-
 # ---- constraint 6: printability
 
 @pytest.mark.parametrize("name", ["kickstand_flap", "kickstand_prop", "hinge_block",
-                                  "hinge_block_spring", "coupon_hinge_lid", "coupon_hinge_flap"])
+                                  "hinge_block_spring", "wedge_bar", "coupon_hinge_lid",
+                                  "coupon_hinge_flap"])
 def test_kickstand_part_printable(printable, name):
     part = printable[name]
     assert part.is_valid and len(part.solids()) == 1
@@ -295,20 +322,27 @@ def _slice_area(part, z, t=0.2):
 
 def test_hinge_block_prints_without_supports(printable):
     """Printed standing on the block's outer end face, every layer of the block has the same
-    profile (nothing hangs in the air); the pin (and the spring leaf) grow straight up from it,
-    so the pin prints round."""
+    profile except across the bar hole, whose roof is a short bridge (nothing else hangs in the
+    air); the pin (and the spring leaf) grow straight up from it, so the pin prints round."""
     bw, pl = p.ks_block_w, p.ks_pin_len
     pin_area = math.pi * (p.ks_pin_d / 2) ** 2
+    yh, yl = ks.bar_ends()
+    bridge = p.ks_hole_roof + ks.bar_t(-p.ks_post_out)          # widest hole span
+    assert bridge <= 3.5
+    hole_area = sum(p.ks_hole_roof + ks.bar_t((y0 + y1) / 2) for y0, y1 in
+                    ((-p.ks_post_out, -p.ks_post_in), (p.ks_post_in, p.ks_post_out))) * \
+        (p.ks_post_out - p.ks_post_in)
+    for name in ("hinge_block", "hinge_block_spring"):
+        part = printable[name]
+        out = [_slice_area(part, z) for z in (0.5, bw - 0.5)]       # outside the hole
+        assert max(out) - min(out) < 0.5, name
+        assert out[0] - _slice_area(part, bw / 2) == pytest.approx(hole_area, abs=0.5), name
     plain = printable["hinge_block"]
     assert plain.bounding_box().size.Z == pytest.approx(bw + pl, abs=0.01)
-    a = [_slice_area(plain, z) for z in (0.5, 2.0, bw - 0.5)]
-    assert max(a) - min(a) < 0.5
     assert _slice_area(plain, bw + 1.0) == pytest.approx(pin_area, abs=0.5)
     assert _slice_area(plain, bw + 3.0) == pytest.approx(pin_area, abs=0.5)
     spring = printable["hinge_block_spring"]
     h = spring.bounding_box().size.Z
-    block = [_slice_area(spring, z) for z in (0.5, 2.0, bw - 0.5)]
-    assert max(block) - min(block) < 0.5
     up = [_slice_area(spring, z) for z in (bw + 1.0, bw + 3.0)]           # leaf + pin
     assert max(up) - min(up) < 0.5
     leaf = [_slice_area(spring, z) for z in (bw + pl + 0.5, bw + pl + 1.5)]
@@ -394,6 +428,9 @@ def test_coupon_hinge_fits_and_clicks():
         assert overlap(f, lid_piece) < 0.01, a
         assert overlap(f, plain) < 0.01, a
         assert overlap(f, spring) < 0.01, a
+    for bar in coupons.coupon_hinge_bars():
+        assert overlap(bar, lid_piece) < 0.01
+        assert overlap(bar, plain) < 0.01 and overlap(bar, spring) < 0.01
     plain, spring = coupons.coupon_hinge_blocks()
     for a in p.ks_main_notches:
         assert overlap(coupons.coupon_hinge_flap(a), spring) < 0.05, a

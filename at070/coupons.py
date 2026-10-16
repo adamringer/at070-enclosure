@@ -50,3 +50,9 @@ def coupon_hinge_blocks(tip=True):
     xp, xs = kickstand.block_x0s(p.coupon_hinge_w)
     return (_hinge_origin() * kickstand.hinge_block(xp),
             _hinge_origin() * kickstand.hinge_block(xs, spring=True, tip=tip))
+
+
+def coupon_hinge_bars():
+    """(plain block's bar, spring block's bar), seated under the coupon lid piece."""
+    return tuple(_hinge_origin() * kickstand.wedge_bar(x0)
+                 for x0 in kickstand.block_x0s(p.coupon_hinge_w))

@@ -155,30 +155,39 @@ ks_notch_x0 = 0.5         # notches start this far beyond the plate end ...
 ks_notch_len = 5.0        # ... and are this long (the tip sits inside; the hole is beyond)
 ks_hole_wall = 0.8        # min wall between hole and notches / knuckle surface
 ks_block_r = ks_knuckle_r # block half width / top radius (block no taller than the knuckle)
-# hinge block snap legs (flex once, at assembly)
-ks_leg_t = 1.2            # leg thickness
-ks_leg_slit = 2.0         # gap between the two legs
-ks_leg_chan = 0.6         # gap between the inner leg and the block body
-ks_leg_len = 7.4          # leg length from the slit top to the barb catch face
+# hinge block posts and wedge bars (replaced the snap legs 2026-10-16: the legs rocked and popped
+# out when the flap was pivoted). Each block has a rigid post on each side of the hinge axis, each
+# through its own lid slot; one wedge bar per block slides through a hole in both posts along the
+# lid underside and clamps the block to the lid. The slots are those of the printed lid
+# (2026-10-11), so post faces and slot clearance must not change.
+ks_post_in = 4.6          # post inner face, distance from the hinge axis
+ks_post_out = 9.0         # post outer face, distance from the hinge axis
 ks_slot_clear = 0.08      # lid slot clearance per side
-ks_barb_catch = 0.8       # barb overlap under the lid
-ks_barb_flat = 0.3        # barb flat height below the catch face
-ks_leg_play = 0.0         # catch face this far below the lid underside (0 = flush)
-ks_cap_t = 1.2            # cap thickness above the slit
-ks_leg_strain_max = 0.03  # allowed snap-leg strain (one-time assembly)
+ks_ear_top = 6.2          # block ears (body to post, above the lid back) top height
+ks_post_chamfer = 0.4     # 45 deg lead-in on the post tip (Y faces)
+ks_post_floor = 1.6       # post material below the bar hole at its deepest point
+ks_bar_w = 2.2            # bar width along the hinge axis
+ks_bar_clear = 0.1        # hole clearance per side across the bar width
+ks_bar_t0 = 1.6           # bar thickness at its leading end
+ks_bar_taper = 0.0625     # bar thickness growth per mm toward the head (1:16, self-locking)
+ks_bar_over = 1.0         # leading end past the far post's outer face (seated)
+ks_bar_travel = 2.0       # head gap to the near post when seated (room to push a loose bar further)
+ks_bar_head_t = 1.5       # pull tab thickness along the bar
+ks_bar_tab = 4.0          # pull tab depth below the bar
+ks_hole_roof = 0.2        # hole roof above the lid underside (the bar bears on the lid, not the post)
 # detent: V notches with steep flanks on the cam, a tip riding in them on a stiff leaf spring
 ks_notch_depth = 0.4      # tip drop from riding on the cam surface to seated in a notch
-ks_flank_deg = 60.0       # notch flank angle from the cam surface tangent (steeper = holds more)
+ks_flank_deg = 65.0       # notch flank angle from the cam surface tangent (steeper = holds more; 60 held weakly)
 ks_notch_apex_r = 0.25    # rounding radius at the bottom of the V
 ks_notch_wall = 0.5       # min wall between neighboring notches at the cam surface
 ks_tip_r = 0.45           # spring tip radius
 ks_tip_len = 3.0          # spring tip length along the axis
 ks_preload = 0.0          # extra leaf deflection when the tip is seated in a notch
-ks_leaf_t = 2.4           # leaf spring thickness
+ks_leaf_t = 2.6           # leaf spring thickness (2.4 printed and did not crack, 2026-10-11)
 ks_leaf_len = 10.0        # leaf spring length (root at the block face)
 ks_leaf_clear = 0.3       # leaf inner face to the cam surface
 ks_leaf_top = 3.7         # leaf top above the hinge axis (leaf height ks_axis_z + this)
-ks_leaf_strain_max = 0.015   # allowed leaf strain (flexes on every click)
+ks_leaf_strain_max = 0.016   # allowed leaf strain (flexes on every click, stressed across layers)
 ks_leaf_E = 2500.0        # PLA modulus used for the holding-torque estimate, N/mm^2 (estimate)
 ks_case_weight = 3.5      # N, assumed case weight acting at the outline center
 # main flap (landscape)

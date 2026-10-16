@@ -39,34 +39,37 @@ real, right-handed geometry. Keep `params.py` in front-view terms.
 | `kickstand_prop` | same, flat |
 | `hinge_block` | standing on its outer end face (hinge axis vertical, pin up): every layer has the same profile, so no supports, and the pin prints round. Print 2 |
 | `hinge_block_spring` | same, pin and detent leaf both grow straight up. Print 2 |
+| `wedge_bar` | flat on its side (taper and pull tab in the bed plane). Print 4 |
 | `coupon_fit_frame` | front face down; checks panel outline, window, FPC relief, and (full-height top-edge section) HDMI/power notches with the panel in place and one clip slot |
 | `coupon_top_edge_lid` | back face down; snaps onto the fit frame's top-edge section to check the clip |
 | `coupon_hinge_lid` | back face down; 50 x 40 piece of lid plate with the four slots of both blocks |
-| `coupon_hinge_flap` | flat; 25 wide plate, knuckle with cam and a hole at each end; use with one `hinge_block` and one `hinge_block_spring` |
+| `coupon_hinge_flap` | flat; 25 wide plate, knuckle with cam and a hole at each end; use with one `hinge_block`, one `hinge_block_spring` and two `wedge_bar` |
 
 Suggested settings: 0.4 mm nozzle, 0.2 mm layers, 6 perimeters for the 2.4 mm walls
 (wall count matters for the snap clips, so keep them solid), 15 to 20 % infill, no supports.
-Print the coupons first. The hinge coupon (`coupon_hinge_lid`, `coupon_hinge_flap`, one `hinge_block` and one
-`hinge_block_spring`) checks the snap fit, the pin fit and the clicks.
+Print the coupons first. The hinge coupon (`coupon_hinge_lid`, `coupon_hinge_flap`, one `hinge_block`, one
+`hinge_block_spring` and two `wedge_bar`) checks the block clamp, the pin fit and the clicks.
 
 `out/assembly.step` holds the shell, lid and reference mocks (panel, board keep-out, HDMI
 plug, power cable) in assembled positions, one solid each, for visual checking.
 `out/kickstand_assembly.step` shows the shell and lid with all four hinge blocks, the prop
 closed and the main flap open at the notch nearest 30 degrees of tilt.
 
-Print 4 hinge blocks in total: 2 `hinge_block` and 2 `hinge_block_spring`. Each flap uses one
-of each. The same block fits both flaps.
+Print 4 hinge blocks in total: 2 `hinge_block` and 2 `hinge_block_spring`, plus 4 `wedge_bar`.
+Each flap uses one of each block and two bars. The same block fits both flaps.
 
 ## Kickstand
 
 Nothing protrudes from the lid back, so the lid still prints back face down without supports.
 The lid has eight through-slots (two per hinge block). A hinge block sits on the lid back; it has a
-pair of snap legs on each side of the hinge axis, each pair through its own slot, and the barbs
-catch the lid underside (snaps in once, meant to stay). Holding the block down on both sides of the
-axis keeps it from lifting when the flap is pushed.
+rigid post on each side of the hinge axis, each through its own slot. A wedge bar slides along the
+lid underside through a hole in both posts and clamps the block flat to the lid, on both sides of
+the axis, so it can't rock or lift when the flap is pivoted. The bar tapers 1:16 and is
+self-locking: push it in (thin end first, from the pull-tab side) until it is tight. Pull the tab
+to remove it.
 The hinge line is 8 mm tall (8 mm knuckle). Each block has a 4 mm pin on its inner face that enters a blind hole in the flap's knuckle end
 (4.4 mm hole, 4 mm engagement), and, on the spring
-variant, a leaf spring whose rounded tip clicks into steep-flanked V notches (60 degree flanks) on the flap's cam.
+variant, a leaf spring whose rounded tip clicks into steep-flanked V notches (65 degree flanks) on the flap's cam.
 `kickstand.detent_table()` estimates the detent holding torque against the case weight (3.5 N assumed).
 
 The kickstand parts are modeled in the case's model frame (and a canonical hinge frame, see
@@ -83,14 +86,15 @@ The kickstand parts are modeled in the case's model frame (and a canonical hinge
 
 ## Assembly
 
-1. Place the panel face down in the front shell (the glass against the front plate).
-2. Route the power cable into its notch in the top wall (lay it in from the back).
-3. Press the lid on. The six hooks snap into the wall slots.
-4. The HDMI plug goes in from outside through its notch in the top wall.
-5. Kickstand: slide the two blocks' pins into the knuckle ends of the flap (spring block at the
-   cam end, pins pointing at each other), then set the whole assembly on the lid back and press
-   both blocks' two leg pairs into their four slots together, square to the lid, until the barbs click. The
-   slots hold the blocks apart and so keep the flap captured.
+1. Kickstand, on the lid before it goes on the case (the bars sit inside): slide the two
+   blocks' pins into the knuckle ends of the flap (spring block at the cam end, pins pointing at
+   each other), set the whole assembly on the lid back and drop both blocks' posts into their
+   four slots. The slots hold the blocks apart and so keep the flap captured. Turn the lid over
+   and push a wedge bar through each block's two posts, thin end first, until it is tight.
+2. Place the panel face down in the front shell (the glass against the front plate).
+3. Route the power cable into its notch in the top wall (lay it in from the back).
+4. Press the lid on. The six hooks snap into the wall slots.
+5. The HDMI plug goes in from outside through its notch in the top wall.
 6. Landscape: set the case on its bottom long edge (the flex-cable side), swing the main flap
    out to a click and lean the case back onto it. Portrait: stand it on the +X short edge and
    open the prop to its click. Never stand it on the top edge, where the cables exit. Fold the
