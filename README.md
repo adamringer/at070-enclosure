@@ -5,6 +5,8 @@ Parametric build123d model of a 3D-printed enclosure with a built-in kickstand f
 flap, portrait prop, hinge blocks), and fit-test coupons. Target printer: Bambu P1S
 (256 mm bed), PLA, Bambu Studio.
 
+![Front and back of the case standing in landscape](docs/images/preview.png)
+
 The datasheet and mechanical drawing are in `docs/`.
 
 ## Design note: case centered on the visible area
@@ -20,6 +22,7 @@ the panel cannot shift.
 
     uv run pytest                  # geometry checks
     uv run python -m at070.build   # writes STEP, STL, 3MF per part and assembly.step to out/
+    uv run python -m at070.docs_images   # re-renders the README images in docs/images/
 
 All dimensions are named constants in `at070/params.py` (mm). Several are photo estimates
 (driver board, HDMI socket, cable positions) and may need adjusting after measuring.
@@ -91,6 +94,15 @@ The kickstand parts are modeled in the case's model frame (and a canonical hinge
    each other), set the whole assembly on the lid back and drop both blocks' posts into their
    four slots. The slots hold the blocks apart and so keep the flap captured. Turn the lid over
    and push a wedge bar through each block's two posts, thin end first, until it is tight.
+   The prop goes on the same way. The pictures show the hinge test piece; each hinge on the lid
+   is the same.
+
+   ![Pins into the knuckle ends](docs/images/install_1_pins.png)
+   ![Posts into the lid slots](docs/images/install_2_posts.png)
+   ![Bars slide through the posts](docs/images/install_3_bars.png)
+   ![Bars seated](docs/images/install_4_seated.png)
+   ![Where the four bars go on the lid](docs/images/install_overview.png)
+   ![Section through a hinge block](docs/images/clamp_section.png)
 2. Place the panel face down in the front shell (the glass against the front plate).
 3. Route the power cable into its notch in the top wall (lay it in from the back).
 4. Press the lid on. The six hooks snap into the wall slots.
