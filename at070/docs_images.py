@@ -295,7 +295,43 @@ def overview(out):
     sc.render(out, "Inside of the lid: the four bars (main flap and prop)")
 
 
-SCENES = {"preview": preview, "install_1_pins": step1, "install_2_posts": step2,
+def _kind(name):
+    return "flap" if name.endswith("flap") else "bar" if "bar" in name else "block"
+
+
+def portrait(out):
+    """Case standing in portrait on its +X short edge, leaning back on the prop: front and back."""
+    st = ks.prop_state()
+    shapes = [(front_shell(), "shell"), (lid(), "lid"), (mocks.panel(), "screen")]
+    shapes += [(s, _kind(n)) for n, s in ks.all_parts(prop_opening=max(p.ks_prop_notches)).items()]
+    R = Rot(X=90 + st["tilt"]) * Rot(Z=90)      # world -X (the model's +X edge) down
+    posed = [(R * to_world(s), c) for s, c in shapes]
+    zmin = min(s.bounding_box().min.Z for s, _ in posed)
+    views = []
+    for az, title in ((60, f"Portrait on the prop, {st['tilt']:.1f} deg"), (-115, "Back: prop open")):
+        sc = Scene(az=az, el=20, tol=0.15, desk=0.0)
+        for s, c in posed:
+            sc.add(Pos(0, 0, -zmin) * s, c)
+        views.append(sc.render(None, title))
+    im = Image.new("RGB", (2 * W, H), "white")
+    for i, v in enumerate(views):
+        im.paste(v, (i * W, 0))
+    im.resize((W * 3 // 2, H * 3 // 4), Image.LANCZOS).save(out)
+    print(out)
+
+
+def exploded(out):
+    """Every printed part pulled apart along the case depth, front shell first."""
+    gap = {"shell": 0, "screen": 30, "bar": 58, "lid": 100, "block": 140, "flap": 170}
+    shapes = [(front_shell(), "shell"), (mocks.panel(), "screen"), (lid(), "lid")]
+    shapes += [(s, _kind(n)) for n, s in ks.all_parts().items()]
+    sc = Scene(az=-125, el=28, tol=0.15)
+    for s, c in shapes:
+        sc.add(Pos(0, 0, gap[c]) * to_world(s), c)
+    sc.render(out, "Exploded: front shell, panel, wedge bars, lid, hinge blocks, flap and prop")
+
+
+SCENES = {"preview": preview, "portrait": portrait, "exploded": exploded, "install_1_pins": step1, "install_2_posts": step2,
           "install_3_bars": step3, "install_4_seated": step4, "clamp_section": section,
           "install_overview": overview}
 

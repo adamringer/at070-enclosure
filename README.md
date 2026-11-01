@@ -5,9 +5,17 @@ Parametric build123d model of a 3D-printed enclosure with a built-in kickstand f
 flap, portrait prop, hinge blocks), and fit-test coupons. Target printer: Bambu P1S
 (256 mm bed), PLA, Bambu Studio.
 
+## Renders
+
 ![Front and back of the case standing in landscape](docs/images/preview.png)
 
-The datasheet and mechanical drawing are in `docs/`.
+![Front and back of the case standing in portrait on the prop](docs/images/portrait.png)
+
+![Exploded view of all parts](docs/images/exploded.png)
+
+The panel dimensions come from the InnoLux AT070TN92 datasheet (A070-92-TT-01). It is
+copyrighted, so it isn't in the repo; `.gitignore` covers a local copy at
+`docs/AT070TN92_*`.
 
 ## Design note: case centered on the visible area
 
