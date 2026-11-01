@@ -26,14 +26,24 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "build123d" },
+    { name = "numpy" },
+    { name = "pillow" },
+]
+
+[package.dev-dependencies]
+dev = [
     { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "build123d", specifier = ">=0.13.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "numpy", specifier = ">=2.5.4" },
+    { name = "pillow", specifier = ">=12.2.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]
 
 [[package]]
 name = "bd-materials"
