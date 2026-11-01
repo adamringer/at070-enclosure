@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 out/
+
+# Panel datasheet and drawing (InnoLux, copyrighted): kept locally, never committed
+docs/AT070TN92_*
+# Local backups (repo bundles etc.)
+backup/
